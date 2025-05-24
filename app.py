@@ -71,17 +71,9 @@ def detect_aruco_markers(image_path):
         matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
         warped = cv2.warpPerspective(image, matrix, (width, height))
         
-        # draw a horizontal line
-        # cv2.line(warped, (0, height // 2 - 8), (width, height // 2 - 8), (255, 0, 0), 2)
-        # cv2.line(warped, (0, height // 2 + 8), (width, height // 2 + 8), (255, 0, 0), 2)
-
         # segment width
         segment_width = 16
-        
-        # draw a vertical line
-        # cv2.line(warped, (width // 2 - segment_width // 2, 0), (width // 2 - segment_width // 2, height), (255, 0, 0), 2)
-        # cv2.line(warped, (width // 2 + segment_width // 2, 0), (width // 2 + segment_width // 2, height), (255, 0, 0), 2)
-
+    
         # for segment_width in width
         for i in range(0, width, segment_width):
             cv2.line(warped, (i, 0), (i, height), (255, 0, 0), 1)
@@ -89,15 +81,31 @@ def detect_aruco_markers(image_path):
         for i in range(0, height, segment_width):
             cv2.line(warped, (0, i), (width, i), (255, 0, 0), 1)
 
+        # get the avarage color for the central segments along the center horizontal line
+
+        center_y = height // 2
+        central_segments = []
+        for i in range(0, width, segment_width):
+            segment = warped[center_y - segment_width // 2:center_y + segment_width // 2, i:i + segment_width]
+            avg_color = cv2.mean(segment)[:3]
+            position = (i + segment_width // 2, center_y)
+            central_segments.append((avg_color, position))
+
+        # vertical line in the middle of the image
+        for i in range(0, height, segment_width):
+            segment = warped[i:i + segment_width, width // 2 - segment_width // 2:width // 2 + segment_width // 2]
+            avg_color = cv2.mean(segment)[:3]
+            print(f"Average color for segment at {i}: {avg_color}")
+            position = (width // 2, i + segment_width // 2)
+            central_segments.append((avg_color, position))
         
-
-        # Save warped ROI
-        cv2.imwrite("roi_warped.png", warped)
-        print(f"Warped ROI extracted and saved as roi_warped.png")
-
+        cv2.imwrite("warped_image.png", warped)
+    else:
+        print("Not all markers detected. Detected positions:", positions)
+    
     print(f"Positions: {positions}")
     cv2.imwrite("detected_markers.png", image)
     return positions
 
 if __name__ == "__main__":
-    detect_aruco_markers("image2.jpg")
+    detect_aruco_markers("image3.jpg")
