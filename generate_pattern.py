@@ -13,6 +13,15 @@ def normalize_text(text, max_length=18):
         text = "UNKNOWN"
     else:
         text = str(text)
+
+    # replace á with a, é with e, etc.
+    text = re.sub(r'[áàäâ]', 'A', text)
+    text = re.sub(r'[éèëê]', 'E', text)
+    text = re.sub(r'[íìïî]', 'I', text)
+    text = re.sub(r'[óòöô]', 'O', text)
+    text = re.sub(r'[úùüû]', 'U', text)
+    text = re.sub(r'[ñ]', 'N', text)
+    text = re.sub(r'[ç]', 'C', text)
     
     # Remove special characters except spaces, periods, commas, and hyphens
     text = re.sub(r'[^A-Za-z0-9\s.,-]', '', text)
@@ -87,46 +96,65 @@ def get_patterns():
     Return the pattern dictionary used for character encoding.
     """
     return {
-        'A': [[1,0,1], [0,1,0], [1,0,1]],
-        'B': [[1,1,0], [1,0,1], [0,1,1]],
-        'C': [[1,0,0], [0,1,0], [0,0,1]],
-        'D': [[0,1,1], [1,0,0], [1,1,0]],
-        'E': [[1,1,1], [0,1,0], [1,1,1]],
-        'F': [[1,1,1], [0,1,0], [1,0,0]],
-        'G': [[1,1,1], [1,0,0], [1,1,1]],
-        'H': [[1,0,1], [1,1,1], [1,0,1]],
-        'I': [[1,1,1], [0,1,0], [1,1,1]],
-        'J': [[0,0,1], [0,0,1], [1,1,1]],
-        'K': [[1,0,1], [1,1,0], [1,0,1]],
-        'L': [[1,0,0], [1,0,0], [1,1,1]],
-        'M': [[1,0,1], [1,1,1], [1,0,1]],
-        'N': [[1,1,0], [1,0,1], [0,1,1]],
-        'O': [[1,1,1], [1,0,1], [1,1,1]],
-        'P': [[1,1,1], [1,1,0], [1,0,0]],
-        'Q': [[1,1,1], [1,0,1], [1,1,0]],
-        'R': [[1,1,0], [1,1,1], [1,0,1]],
-        'S': [[0,1,1], [0,1,0], [1,1,0]],
-        'T': [[1,1,1], [0,1,0], [0,1,0]],
-        'U': [[1,0,1], [1,0,1], [1,1,1]],
-        'V': [[1,0,1], [1,0,1], [0,1,0]],
-        'W': [[1,0,1], [1,1,1], [1,0,1]],
-        'X': [[1,0,1], [0,1,0], [1,0,1]],
-        'Y': [[1,0,1], [0,1,0], [0,1,0]],
-        'Z': [[1,1,1], [0,1,0], [1,1,1]],
-        '0': [[1,1,1], [1,0,1], [1,1,1]],
-        '1': [[0,1,0], [1,1,0], [0,1,0]],
-        '2': [[1,1,1], [0,1,1], [1,1,1]],
-        '3': [[1,1,1], [0,1,1], [1,1,1]],
-        '4': [[1,0,1], [1,1,1], [0,0,1]],
-        '5': [[1,1,1], [1,1,0], [1,1,1]],
-        '6': [[1,1,1], [1,1,0], [1,1,1]],
-        '7': [[1,1,1], [0,0,1], [0,0,1]],
-        '8': [[1,1,1], [1,1,1], [1,1,1]],
-        '9': [[1,1,1], [1,1,1], [0,0,1]],
-        ' ': [[0,1,0], [0,0,0], [0,1,0]],  # Space
-        '.': [[0,0,0], [0,0,0], [0,1,0]],  # Period
-        ',': [[0,0,0], [0,0,0], [0,1,1]],  # Comma
-        '-': [[0,0,0], [1,1,1], [0,0,0]],  # Hyphen
+        # Basic Latin letters - kept distinctive patterns
+        'A': [[1,0,1], [1,1,1], [1,0,1]],      # Changed from original to be more A-like
+        'Ã': [[0,1,0], [1,0,1], [1,1,1]],      # More distinctive from A
+        'B': [[1,1,0], [1,1,1], [1,1,0]],      # More B-like with two bumps
+        'C': [[1,1,1], [1,0,0], [1,1,1]],      # C-shape opening to right
+        'Ç': [[1,1,1], [1,0,0], [1,1,0]],      # C with cedilla difference
+        'D': [[1,1,0], [1,0,1], [1,1,0]],      # D-shape
+        'E': [[1,1,1], [1,1,0], [1,1,1]],      # E with middle bar
+        'É': [[0,1,0], [1,1,1], [1,0,0]],      # Distinctive from E
+        'È': [[1,0,0], [1,1,1], [1,0,0]],      # Different accent pattern
+        'Ê': [[0,1,0], [1,1,1], [1,1,1]],      # Hat-like accent
+        'F': [[1,1,1], [1,1,0], [1,0,0]],      # F without bottom bar
+        'G': [[1,1,1], [1,0,0], [1,0,1]],      # G with inner bar
+        'H': [[1,0,1], [1,1,1], [1,0,1]],      # H-shape (kept as good)
+        'I': [[1,1,1], [0,1,0], [1,1,1]],      # I with top/bottom bars
+        'Í': [[0,0,1], [0,1,0], [1,1,1]],      # I with accent
+        'J': [[0,1,1], [0,0,1], [1,0,1]],      # J hook shape
+        'K': [[1,0,1], [1,1,0], [1,0,1]],      # K shape (kept)
+        'L': [[1,0,0], [1,0,0], [1,1,1]],      # L shape (kept)
+        'M': [[1,1,1], [1,0,1], [1,0,1]],      # M with peaks
+        'N': [[1,1,0], [1,0,1], [0,1,1]],      # N diagonal (kept)
+        'O': [[1,1,1], [1,0,1], [1,1,1]],      # O square (kept)
+        'Õ': [[0,1,0], [1,0,1], [0,1,0]],      # O with tilde pattern
+        'Ó': [[0,0,1], [1,0,1], [1,1,1]],      # O with accent
+        'Ô': [[0,1,0], [1,0,1], [1,1,1]],      # O with hat
+        'P': [[1,1,1], [1,1,0], [1,0,0]],      # P shape (kept)
+        'Q': [[1,1,1], [1,0,1], [0,1,1]],      # Q with tail
+        'R': [[1,1,0], [1,1,1], [1,0,1]],      # R shape (kept)
+        'S': [[0,1,1], [0,1,0], [1,1,0]],      # S curve (kept)
+        'T': [[1,1,1], [0,1,0], [0,1,0]],      # T shape (kept)
+        'U': [[1,0,1], [1,0,1], [1,1,1]],      # U shape (kept)
+        'Ú': [[0,0,1], [1,0,1], [0,1,0]],      # U with accent
+        'V': [[1,0,1], [1,0,1], [0,1,0]],      # V shape (kept)
+        'W': [[1,0,1], [1,0,1], [1,1,1]],      # W wide bottom
+        'X': [[1,0,1], [0,1,0], [1,0,1]],      # X cross (kept)
+        'Y': [[1,0,1], [0,1,0], [0,1,0]],      # Y shape (kept)
+        'Z': [[1,1,1], [0,1,0], [1,1,1]],      # Z diagonal (kept)
+        
+        # Numbers - made more distinctive
+        '0': [[1,1,1], [1,0,1], [1,1,1]],      # Square O (kept)
+        '1': [[0,1,0], [1,1,0], [0,1,0]],      # Vertical line (kept)
+        '2': [[1,1,1], [0,1,1], [1,1,1]],      # 2 shape (kept but was duplicate)
+        '3': [[1,1,1], [0,1,1], [0,1,1]],      # Different from 2
+        '4': [[1,0,1], [1,1,1], [0,0,1]],      # 4 shape (kept)
+        '5': [[1,1,1], [1,1,0], [0,1,1]],      # Different from 6
+        '6': [[1,1,1], [1,1,0], [1,0,1]],      # 6 with bottom gap
+        '7': [[1,1,1], [0,0,1], [0,0,1]],      # 7 shape (kept)
+        '8': [[1,1,1], [1,1,1], [1,1,1]],      # Full block (kept)
+        '9': [[1,1,1], [1,1,1], [0,0,1]],      # 9 shape (kept)
+        
+        # Punctuation
+        ' ': [[0,0,0], [0,0,0], [0,0,0]],      # Empty space
+        '.': [[0,0,0], [0,0,0], [0,1,0]],      # Period (kept)
+        ',': [[0,0,0], [0,0,0], [1,0,0]],      # Comma - different from period
+        '-': [[0,0,0], [1,1,1], [0,0,0]],      # Hyphen (kept)
+        '!': [[0,1,0], [0,1,0], [0,1,0]],      # Exclamation
+        '?': [[1,1,1], [0,1,0], [0,1,0]],      # Question mark
+        ':': [[0,1,0], [0,0,0], [0,1,0]],      # Colon
+        ';': [[0,1,0], [0,0,0], [1,0,0]],      # Semicolon
     }
 
 def create_pattern_image(text, cell_size=20):
@@ -194,10 +222,10 @@ def create_dictionary_image(output_path="pattern_dictionary.png", img_size=1000)
             font = None
     
     # Calculate layout
-    chars_per_row = 6  # 8 characters per row to fit nicely in 1000px
-    cell_size = 20  # Size of each pattern cell
+    chars_per_row = 8  # 8 characters per row to fit nicely in 1000px
+    cell_size = 15  # Size of each pattern cell
     pattern_width = 3 * cell_size  # 3x3 pattern
-    char_width = 60  # Space for character display
+    char_width = 30  # Space for character display
     total_item_width = pattern_width + char_width + 20  # 20px spacing
     
     # Calculate starting positions to center the grid
