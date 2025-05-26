@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import os
 import re
 
@@ -82,12 +82,11 @@ def normalize_date(date_str):
     
     return date_str
 
-def create_pattern_image(text, cell_size=20):
+def get_patterns():
     """
-    Create a pattern image from text using 3x3 patterns for each character.
+    Return the pattern dictionary used for character encoding.
     """
-    # Define 3x3 patterns for characters (0=white, 1=black)
-    patterns = {
+    return {
         'A': [[1,0,1], [0,1,0], [1,0,1]],
         'B': [[1,1,0], [1,0,1], [0,1,1]],
         'C': [[1,0,0], [0,1,0], [0,0,1]],
@@ -129,6 +128,12 @@ def create_pattern_image(text, cell_size=20):
         ',': [[0,0,0], [0,0,0], [0,1,1]],  # Comma
         '-': [[0,0,0], [1,1,1], [0,0,0]],  # Hyphen
     }
+
+def create_pattern_image(text, cell_size=20):
+    """
+    Create a pattern image from text using 3x3 patterns for each character.
+    """
+    patterns = get_patterns()
     
     # Calculate image dimensions
     num_chars = len(text)
@@ -168,6 +173,78 @@ def create_pattern_image(text, cell_size=20):
     
     return img
 
+def create_dictionary_image(output_path="pattern_dictionary.png", img_size=1000):
+    """
+    Create a 1000x1000 dictionary image showing all patterns and their corresponding characters.
+    """
+    patterns = get_patterns()
+    
+    # Create image
+    img = Image.new('RGB', (img_size, img_size), 'white')
+    draw = ImageDraw.Draw(img)
+    
+    # Try to load a font, fall back to default if not available
+    try:
+        # Try to use a larger font
+        font = ImageFont.truetype("Arial.ttf", 24)
+    except:
+        try:
+            font = ImageFont.load_default()
+        except:
+            font = None
+    
+    # Calculate layout
+    chars_per_row = 6  # 8 characters per row to fit nicely in 1000px
+    cell_size = 20  # Size of each pattern cell
+    pattern_width = 3 * cell_size  # 3x3 pattern
+    char_width = 60  # Space for character display
+    total_item_width = pattern_width + char_width + 20  # 20px spacing
+    
+    # Calculate starting positions to center the grid
+    grid_width = chars_per_row * total_item_width
+    start_x = (img_size - grid_width) // 2
+    start_y = 50
+        
+    # Sort characters for better organization
+    sorted_chars = sorted(patterns.keys(), key=lambda x: (x.isdigit(), x.isalpha(), x))
+    
+    # Draw each character and its pattern
+    for idx, char in enumerate(sorted_chars):
+        pattern = patterns[char]
+        
+        # Calculate position
+        row = idx // chars_per_row
+        col = idx % chars_per_row
+        
+        x_pos = start_x + col * total_item_width
+        y_pos = start_y + row * (pattern_width + 80)  # 80px vertical spacing
+        
+        # Draw the 3x3 pattern
+        for pattern_row in range(3):
+            for pattern_col in range(3):
+                x1 = x_pos + pattern_col * cell_size
+                y1 = y_pos + pattern_row * cell_size
+                x2 = x1 + cell_size
+                y2 = y1 + cell_size
+                
+                color = 'black' if pattern[pattern_row][pattern_col] == 1 else 'white'
+                draw.rectangle([x1, y1, x2, y2], fill=color, outline='gray', width=1)
+        
+        # Draw the character label
+        char_x = x_pos + pattern_width + 10
+        char_y = y_pos + cell_size  # Center vertically with pattern
+        
+        if font:
+            draw.text((char_x, char_y), char, fill='black', font=font)
+        else:
+            # Fallback for systems without font support
+            draw.text((char_x, char_y), char, fill='black')
+    
+    # Save the image
+    img.save(output_path)
+    print(f"Dictionary image saved as '{output_path}'")
+    return img
+
 def process_csv_to_patterns(csv_file_path, output_dir="pattern_images"):
     """
     Process CSV file and generate pattern images for each entry.
@@ -202,7 +279,7 @@ def process_csv_to_patterns(csv_file_path, output_dir="pattern_images"):
         elif 'date' in col_lower and date_col is None:
             date_col = col
         
-        print(f"Using: lat={lat_col}, lng={lng_col}, name={name_col}, date={date_col}")
+    print(f"Using: lat={lat_col}, lng={lng_col}, name={name_col}, date={date_col}")
     
     # Process each row
     for idx, row in df.iterrows():
@@ -248,15 +325,21 @@ def process_csv_to_patterns(csv_file_path, output_dir="pattern_images"):
     print(f"\nProcessing complete! Images saved in '{output_dir}' directory")
 
 if __name__ == "__main__":
-    # Replace 'your_file.csv' with the path to your CSV file
+    # First, create the dictionary image
+    print("Creating pattern dictionary image...")
+    create_dictionary_image("pattern_dictionary.png", 1000)
+    
+    # Then process the CSV file
     csv_file_path = "data.csv"
     
     # Process the CSV and generate pattern images
     process_csv_to_patterns(csv_file_path)
     
     print("\nPattern generation complete!")
-    print("Each entry now has 4 pattern images:")
-    print("- {id}-lat.png (latitude pattern)")
-    print("- {id}-lng.png (longitude pattern)")  
-    print("- {id}-name.png (name pattern)")
-    print("- {id}-date.png (date pattern)")
+    print("Files created:")
+    print("- pattern_dictionary.png (1000x1000 reference image)")
+    print("- Pattern images for each CSV entry:")
+    print("  - {id}-lat.png (latitude pattern)")
+    print("  - {id}-lng.png (longitude pattern)")  
+    print("  - {id}-name.png (name pattern)")
+    print("  - {id}-date.png (date pattern)")
