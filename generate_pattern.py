@@ -51,66 +51,53 @@ def get_patterns():
     Return the pattern dictionary used for character encoding.
     """
     return {
-        # Basic Latin letters - kept distinctive patterns
-        'A': [[1,0,1], [1,1,1], [1,0,1]],      # Changed from original to be more A-like
-        'Ã': [[0,1,0], [1,0,1], [1,1,1]],      # More distinctive from A
-        'B': [[1,1,0], [1,1,1], [1,1,0]],      # More B-like with two bumps
-        'C': [[1,1,1], [1,0,0], [1,1,1]],      # C-shape opening to right
-        'Ç': [[1,1,1], [1,0,0], [1,1,0]],      # C with cedilla difference
-        'D': [[1,1,0], [1,0,1], [1,1,0]],      # D-shape
-        'E': [[1,1,1], [1,1,0], [1,1,1]],      # E with middle bar
-        'É': [[0,1,0], [1,1,1], [1,0,0]],      # Distinctive from E
-        'È': [[1,0,0], [1,1,1], [1,0,0]],      # Different accent pattern
-        'Ê': [[0,1,0], [1,1,1], [1,1,1]],      # Hat-like accent
-        'F': [[1,1,1], [1,1,0], [1,0,0]],      # F without bottom bar
-        'G': [[1,1,1], [1,0,0], [1,0,1]],      # G with inner bar
-        'H': [[1,0,1], [1,1,1], [1,0,1]],      # H-shape (kept as good)
-        'I': [[1,1,1], [0,1,0], [1,1,1]],      # I with top/bottom bars
-        'Í': [[0,0,1], [0,1,0], [1,1,1]],      # I with accent
-        'J': [[0,1,1], [0,0,1], [1,0,1]],      # J hook shape
-        'K': [[1,0,1], [1,1,0], [1,0,1]],      # K shape (kept)
-        'L': [[1,0,0], [1,0,0], [1,1,1]],      # L shape (kept)
-        'M': [[1,1,1], [1,0,1], [1,0,1]],      # M with peaks
-        'N': [[1,1,0], [1,0,1], [0,1,1]],      # N diagonal (kept)
-        'O': [[1,1,1], [1,0,1], [1,1,1]],      # O square (kept)
-        'Õ': [[0,1,0], [1,0,1], [0,1,0]],      # O with tilde pattern
-        'Ó': [[0,0,1], [1,0,1], [1,1,1]],      # O with accent
-        'Ô': [[0,1,0], [1,0,1], [1,1,1]],      # O with hat
-        'P': [[1,1,1], [1,1,0], [1,0,0]],      # P shape (kept)
-        'Q': [[1,1,1], [1,0,1], [0,1,1]],      # Q with tail
-        'R': [[1,1,0], [1,1,1], [1,0,1]],      # R shape (kept)
-        'S': [[0,1,1], [0,1,0], [1,1,0]],      # S curve (kept)
-        'T': [[1,1,1], [0,1,0], [0,1,0]],      # T shape (kept)
-        'U': [[1,0,1], [1,0,1], [1,1,1]],      # U shape (kept)
-        'Ú': [[0,0,1], [1,0,1], [0,1,0]],      # U with accent
-        'V': [[1,0,1], [1,0,1], [0,1,0]],      # V shape (kept)
-        'W': [[1,0,1], [1,0,1], [1,1,1]],      # W wide bottom
-        'X': [[1,0,1], [0,1,0], [1,0,1]],      # X cross (kept)
-        'Y': [[1,0,1], [0,1,0], [0,1,0]],      # Y shape (kept)
-        'Z': [[1,1,1], [0,1,0], [1,1,1]],      # Z diagonal (kept)
-        
-        # Numbers - made more distinctive
-        '0': [[1,1,1], [1,0,1], [1,1,1]],      # Square O (kept)
-        '1': [[0,1,0], [1,1,0], [0,1,0]],      # Vertical line (kept)
-        '2': [[1,1,1], [0,1,1], [1,1,1]],      # 2 shape (kept but was duplicate)
-        '3': [[1,1,1], [0,1,1], [0,1,1]],      # Different from 2
-        '4': [[1,0,1], [1,1,1], [0,0,1]],      # 4 shape (kept)
-        '5': [[1,1,1], [1,1,0], [0,1,1]],      # Different from 6
-        '6': [[1,1,1], [1,1,0], [1,0,1]],      # 6 with bottom gap
-        '7': [[1,1,1], [0,0,1], [0,0,1]],      # 7 shape (kept)
-        '8': [[1,1,1], [1,1,1], [1,1,1]],      # Full block (kept)
-        '9': [[1,1,1], [1,1,1], [0,0,1]],      # 9 shape (kept)
-        
-        # Punctuation
-        ' ': [[0,0,0], [0,0,0], [0,0,0]],      # Empty space
-        '.': [[0,0,0], [0,0,0], [0,1,0]],      # Period (kept)
-        ',': [[0,0,0], [0,0,0], [1,0,0]],      # Comma - different from period
-        '-': [[0,0,0], [1,1,1], [0,0,0]],      # Hyphen (kept)
-        '!': [[0,1,0], [0,1,0], [0,1,0]],      # Exclamation
-        '?': [[1,1,1], [0,1,0], [0,1,0]],      # Question mark
-        ':': [[0,1,0], [0,0,0], [0,1,0]],      # Colon
-        ';': [[0,1,0], [0,0,0], [1,0,0]],      # Semicolon
-        '|': [[0,0,0], [0,1,0], [0,0,0]],      # Separator
+    # Basic Latin letters - improved for better recognition
+    'A': [[0,1,0], [1,1,1], [1,0,1]],      # Classic A shape with peak
+    'B': [[1,1,0], [1,1,1], [1,1,0]],      # B with two bumps (kept good)
+    'C': [[0,1,1], [1,0,0], [0,1,1]],      # C opening to right
+    'D': [[1,1,0], [1,0,1], [1,1,0]],      # D shape (kept good)
+    'E': [[1,1,1], [1,1,0], [1,1,1]],      # E with horizontal lines (kept)
+    'F': [[1,1,1], [1,1,0], [1,0,0]],      # F without bottom (kept)
+    'G': [[0,1,1], [1,0,0], [1,1,1]],      # G with bottom closing
+    'H': [[1,0,1], [1,1,1], [1,0,1]],      # Perfect H (kept)
+    'I': [[1,1,1], [0,1,0], [1,1,1]],      # I with serifs (kept)
+    'J': [[0,0,1], [0,0,1], [1,1,1]],      # J hook at bottom
+    'K': [[1,0,1], [1,1,0], [1,0,1]],      # K with angles (kept)
+    'L': [[1,0,0], [1,0,0], [1,1,1]],      # L shape (kept)
+    'M': [[1,0,1], [1,1,1], [1,0,1]],      # M with center connection
+    'N': [[1,0,1], [1,1,1], [1,0,1]],      # N with diagonal (similar to M but contextual)
+    'O': [[0,1,0], [1,0,1], [0,1,0]],      # Better circular O
+    'P': [[1,1,1], [1,1,0], [1,0,0]],      # P shape (kept)
+    'Q': [[0,1,0], [1,0,1], [0,1,1]],      # Q with distinctive tail
+    'R': [[1,1,0], [1,1,1], [1,0,1]],      # R with leg (kept)
+    'S': [[0,1,1], [0,1,0], [1,1,0]],      # S curve (kept)
+    'T': [[1,1,1], [0,1,0], [0,1,0]],      # T shape (kept)
+    'U': [[1,0,1], [1,0,1], [0,1,0]],      # U with curved bottom
+    'V': [[1,0,1], [1,0,1], [0,1,0]],      # V converging (kept)
+    'W': [[1,0,1], [1,0,1], [1,1,1]],      # W with wide base (kept)
+    'X': [[1,0,1], [0,1,0], [1,0,1]],      # X cross (kept)
+    'Y': [[1,0,1], [0,1,0], [0,1,0]],      # Y shape (kept)
+    'Z': [[1,1,1], [0,1,0], [1,1,1]],      # Z with diagonal (kept)
+    
+    # Numbers - more distinctive and recognizable
+    '0': [[0,1,0], [1,0,1], [0,1,0]],      # Oval zero
+    '1': [[0,1,0], [0,1,0], [0,1,0]],      # Simple vertical line
+    '2': [[1,1,0], [0,1,0], [1,1,1]],      # 2 with curves
+    '3': [[1,1,0], [0,1,0], [1,1,0]],      # 3 with bumps on right
+    '4': [[1,0,1], [1,1,1], [0,0,1]],      # 4 shape (kept)
+    '5': [[1,1,1], [1,1,0], [1,1,0]],      # 5 with top and middle
+    '6': [[0,1,0], [1,1,0], [0,1,0]],      # 6 with loop
+    '7': [[1,1,1], [0,0,1], [0,0,1]],      # 7 shape (kept)
+    '8': [[0,1,0], [1,1,1], [0,1,0]],      # 8 with middle connection
+    '9': [[0,1,0], [0,1,1], [0,1,0]],      # 9 with top loop
+    
+    # Punctuation and special characters
+    ' ': [[0,0,0], [0,0,0], [0,0,0]],      # Empty space (kept)
+    '.': [[0,0,0], [0,0,0], [0,1,0]],      # Period (kept)
+    ';': [[0,1,0], [0,0,0], [0,1,1]],      # Semicolon (improved)
+    '-': [[0,0,0], [1,1,1], [0,0,0]],      # Hyphen (kept)
+    '|': [[0,1,0], [0,1,0], [0,1,0]],      # Vertical bar (improved)
+    '/': [[0,0,1], [0,1,0], [1,0,0]],      # Forward slash
     }
 
 def create_character_image(char, cell_size=20):
@@ -120,8 +107,8 @@ def create_character_image(char, cell_size=20):
     patterns = get_patterns()
     
     # Create 5x5 image (3x3 pattern with 2 cell border border)
-    img_width = 5 * cell_size
-    img_height = 5 * cell_size
+    img_width = 4 * cell_size
+    img_height = 4 * cell_size
     
     # Create image
     img = Image.new('RGB', (img_width, img_height), 'white')
@@ -134,8 +121,8 @@ def create_character_image(char, cell_size=20):
         # Draw 3x3 pattern in the 5x5 grid
         for row in range(3):
             for col in range(3):
-                x1 = (col + 1) * cell_size
-                y1 = (row + 1) * cell_size
+                x1 = (col + 0.5) * cell_size
+                y1 = (row + 0.5) * cell_size
                 x2 = x1 + cell_size
                 y2 = y1 + cell_size
                 
@@ -230,6 +217,24 @@ def create_char_templates(output_dir="character_templates", cell_size=100):
         # Create character image
         img = create_character_image(char, cell_size=cell_size)
         
+        # if character is a space or ponctuation, change name
+        if char == ' ':
+            char = 'SPACE'
+        elif char == '.':
+            char = 'DOT'
+        elif char == ',':
+            char = 'COMMA'
+        elif char == '-':
+            char = 'HYPHEN'
+        elif char == '/':
+            char = 'BAR'
+        elif char == ':':
+            char = 'COLON'
+        elif char == ';':
+            char = 'SEMICOLON'
+        elif char == '|':
+            char = 'PIPE'
+
         # Save image
         filename = f"{char}.png"
         img.save(os.path.join(output_dir, filename))
@@ -250,7 +255,7 @@ def create_image_grid(idx, images, cell_size=15, cols=9, img_width=1000):
 
     draw = ImageDraw.Draw(grid_img)
 
-    gap = 50  # Gap between images
+    gap = 35  # Gap between images
 
     margin = 40  # Margin around the grid
     cell_size = (img_width - 2 * margin - (cols - 1) * gap) // cols
@@ -269,32 +274,28 @@ def create_image_grid(idx, images, cell_size=15, cols=9, img_width=1000):
             is_corner = False
             corner_index = -1
             
-            if col < 2 and row < 2:  # Top-left corner
+            if col == 0 and row == 0:
                 is_corner = True
-                if col == 0 and row == 0:
-                    corner_index = 0
-            elif col >= cols - 2 and row >= rows - 2:  # Bottom-right corner  
+                corner_index = 0
+            elif col == cols - 1 and row == rows - 1:
                 is_corner = True
-                if col == cols - 2 and row == rows - 2:
-                    corner_index = 3
-            elif col < 2 and row >= rows - 2:  # Bottom-left corner
+                corner_index = 3
+            elif col == 0 and row == rows - 1:
                 is_corner = True
-                if col == 0 and row == rows - 2:
-                    corner_index = 2
-            elif col >= cols - 2 and row < 2:  # Top-right corner
+                corner_index = 2
+            elif col == cols - 1 and row == 0:
                 is_corner = True
-                if col == cols - 2 and row == 0:
-                    corner_index = 1
+                corner_index = 1
             
             if is_corner:
                 # Draw fiducial marker if this is the specific corner cell
                 if corner_index >= 0:
                     # White background size spans 2 cells + 1 gap
-                    white_bg_size = cell_size * 2 + gap
+                    white_bg_size = cell_size
                     
                     # Calculate padding and marker size
-                    padding = int(cell_size / 5)
-                    marker_size = white_bg_size - (2 * padding)
+                    padding = int(cell_size / 5) // 2
+                    marker_size = white_bg_size - (padding * 2)
                     
                     # Create drawing context
                     draw = ImageDraw.Draw(grid_img)
@@ -408,8 +409,8 @@ def process_csv_to_individual_characters(csv_file_path, output_dir="character_pa
         filename = re.sub(r' ', '_', filename)
         path = os.path.join(output_dir, f"{re.sub(r'[^A-Za-z0-9_]', '', filename).lower()}.png")
 
-        data = f"{normalized_name};{normalized_date};{normalized_lat};{normalized_lng}"
-        data = data.ljust(65, '|')        
+        data = f"{normalized_name}|{normalized_date}"
+        data = data.ljust(49, ';')        
 
         max_length = max(max_length, len(data))
         
@@ -426,6 +427,11 @@ def process_csv_to_individual_characters(csv_file_path, output_dir="character_pa
         # Generate image for each character
         for char_idx, char in enumerate(data):
             char_img = create_character_image(char, cell_size=20)
+            if char == ';':
+                print(f"  Skipping character '{char}' at index {char_idx} (semicolon)")
+                # char img is transparent
+                char_img = Image.new('RGBA', char_img.size, (255, 255, 255, 0))
+            
             data_images.append(char_img)
             
             # Save character image
@@ -433,7 +439,7 @@ def process_csv_to_individual_characters(csv_file_path, output_dir="character_pa
         
         print(f"  Saved {len(data_images)} character images ")
         # create image grid        
-        grid_img = create_image_grid(idx, data_images, cell_size=20, cols=9, img_width=1000)
+        grid_img = create_image_grid(idx, data_images, cell_size=20, cols=7, img_width=1000)
 
         grid_img.save(path)        
 
