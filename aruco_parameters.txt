@@ -1,26 +1,41 @@
-AdaptThresh WinMin: 3
-AdaptThresh WinMax: 23
-AdaptThresh Step: 10
-AdaptThresh Const: 0
-Min Perimeter (*0.01): 3
-Max Perimeter (*0.01): 400
-Polygon Accuracy (*0.01): 3
-Min Corner Dist (*0.01): 5
-Min Dist Border: 3
-Border Bits: 1
-Min Otsu StdDev (*0.1): 50
-Perspective Pixels: 8
-Perspective Margin (*0.01): 13
-Corner Refine Win: 5
-Corner Refine Iter: 30
-Corner Refine Acc (*0.01): 10
-Error Correction (*0.01): 60
-Gaussian Blur: 5
-CLAHE Clip (*0.1): 20
-CLAHE Tile Size: 8
-Bilateral D: 9
-Bilateral SigColor: 75
-Bilateral SigSpace: 75
-Use Red Channel: 1
-Contrast (*0.1): 10
-Brightness: 0
+ArUco Detection Parameters
+==============================
+
+Detection Parameters:
+--------------------
+adaptiveThreshWinSizeMin: 3
+adaptiveThreshWinSizeMax: 23
+adaptiveThreshWinSizeStep: 10
+adaptiveThreshConstant: 0
+minMarkerPerimeterRate: 0.03
+maxMarkerPerimeterRate: 4.0
+polygonalApproxAccuracyRate: 0.03
+minCornerDistanceRate: 0.05
+minDistanceToBorder: 3
+markerBorderBits: 1
+minOtsuStdDev: 5.0
+perspectiveRemovePixelPerCell: 8
+perspectiveRemoveIgnoredMarginPerCell: 0.13
+cornerRefinementWinSize: 5
+cornerRefinementMaxIterations: 30
+cornerRefinementMinAccuracy: 0.1
+errorCorrectionRate: 0.6
+
+Preprocessing Parameters:
+-------------------------
+gaussianBlurKernel: 5
+claheClipLimit: 2.0
+claheTileSize: 8
+bilateralD: 9
+bilateralSigmaColor: 75
+bilateralSigmaSpace: 75
+useRedChannel: True
+contrastBrightness: 1.0
+brightnessOffset: 0
+whiteSaturationClip: 0
+shadowBoost: 5
+redToneFilter: True
+histogramEqualize: True
+morphCloseSize: 0
+edgeEnhance: 5
+gammaCorrection: 0.8

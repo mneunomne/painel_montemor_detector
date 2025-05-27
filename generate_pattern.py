@@ -216,6 +216,25 @@ def create_dictionary_image(output_path="pattern_dictionary.png", img_size=1000)
     print(f"Dictionary image saved as '{output_path}'")
     return img
 
+def create_char_templates(output_dir="character_templates", cell_size=100):
+    """
+    Create individual character template images for each character in the pattern dictionary.
+    Each character will have its own image file in the specified output directory.
+    """
+    patterns = get_patterns()
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for char, pattern in patterns.items():
+        # Create character image
+        img = create_character_image(char, cell_size=cell_size)
+        
+        # Save image
+        filename = f"{char}.png"
+        img.save(os.path.join(output_dir, filename))
+        print(f"Saved template for '{char}' as '{filename}'")
+
 # create full image with data grid with individual character images
 def create_image_grid(idx, images, cell_size=15, cols=9, img_width=1000):
     """
@@ -442,7 +461,7 @@ if __name__ == "__main__":
     # First, create the dictionary image
     print("Creating pattern dictionary image...")
     create_dictionary_image("pattern_dictionary.png", 1000)
-    
+    create_char_templates("character_templates", cell_size=100)
     # Then process the CSV file
     csv_file_path = "data.csv"
     

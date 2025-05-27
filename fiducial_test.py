@@ -1,141 +1,55 @@
 import cv2
 import numpy as np
 
-class InteractiveArucoDetector:
+class ArucoDetector:
     def __init__(self, image_path='image.jpg'):
         """
-        Interactive ArUco detector with real-time parameter adjustment
+        ArUco detector with optimized parameters for red clay surfaces
         """
         self.image_path = image_path
         self.original_image = None
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         
-        # Initialize parameters with default values optimized for red clay
+        # Optimized parameters for red clay detection
         self.params = {
             'adaptiveThreshWinSizeMin': 3,
             'adaptiveThreshWinSizeMax': 23,
             'adaptiveThreshWinSizeStep': 10,
             'adaptiveThreshConstant': 0,
-            'minMarkerPerimeterRate': 3,  # *100 for trackbar (0.03)
-            'maxMarkerPerimeterRate': 400,  # *100 for trackbar (4.0)
-            'polygonalApproxAccuracyRate': 3,  # *100 for trackbar (0.03)
-            'minCornerDistanceRate': 5,  # *100 for trackbar (0.05)
+            'minMarkerPerimeterRate': 0.03,
+            'maxMarkerPerimeterRate': 4.0,
+            'polygonalApproxAccuracyRate': 0.03,
+            'minCornerDistanceRate': 0.05,
             'minDistanceToBorder': 3,
             'markerBorderBits': 1,
-            'minOtsuStdDev': 50,  # *10 for trackbar (5.0)
+            'minOtsuStdDev': 5.0,
             'perspectiveRemovePixelPerCell': 8,
-            'perspectiveRemoveIgnoredMarginPerCell': 13,  # *100 for trackbar (0.13)
+            'perspectiveRemoveIgnoredMarginPerCell': 0.13,
             'cornerRefinementWinSize': 5,
             'cornerRefinementMaxIterations': 30,
-            'cornerRefinementMinAccuracy': 10,  # *100 for trackbar (0.1)
-            'errorCorrectionRate': 60,  # *100 for trackbar (0.6)
-            'gaussianBlurKernel': 5,
-            'claheClipLimit': 20,  # *10 for trackbar (2.0)
+            'cornerRefinementMinAccuracy': 0.1,
+            'errorCorrectionRate': 0.6,
+            # Preprocessing parameters
+            'gaussianBlurKernel': 2,
+            'claheClipLimit': 2.0,
             'claheTileSize': 8,
             'bilateralD': 9,
             'bilateralSigmaColor': 75,
             'bilateralSigmaSpace': 75,
-            'useRedChannel': 1,  # 0 = grayscale, 1 = red channel
-            'contrastBrightness': 10,  # *10 for trackbar (1.0)
-            'brightnessOffset': 0
+            'useRedChannel': True,
+            'contrastBrightness': 1.0,
+            'brightnessOffset': 0,
+            # Specialized parameters for clay/silica challenges
+            'whiteSaturationClip': 0,
+            'shadowBoost': 0,
+            'redToneFilter': False,
+            'histogramEqualize': False,
+            'morphCloseSize': 0,
+            'edgeEnhance': 0,
+            'gammaCorrection': 1.0
         }
         
-        self.setup_ui()
         self.load_image()
-    
-    def setup_ui(self):
-        """Setup the interactive UI with trackbars"""
-        cv2.namedWindow('Controls', cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
-        cv2.resizeWindow('Controls', 500, 900)
-        cv2.moveWindow('Controls', 50, 50)  # Position the window explicitly
-        
-        # Create a dummy image for the controls window to ensure it's visible
-        dummy = np.zeros((900, 500, 3), dtype=np.uint8)
-        cv2.putText(dummy, "ArUco Detection Controls", (10, 30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        cv2.putText(dummy, "Adjust trackbars below", (10, 70), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
-        cv2.putText(dummy, "Press 's' to save parameters", (10, 100), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 150), 1)
-        cv2.putText(dummy, "Press 'q' to quit", (10, 120), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 150), 1)
-        cv2.imshow('Controls', dummy)
-        
-        # Create trackbars for all parameters
-        cv2.createTrackbar('AdaptThresh WinMin', 'Controls', 
-                          self.params['adaptiveThreshWinSizeMin'], 50, self.update_detection)
-        cv2.createTrackbar('AdaptThresh WinMax', 'Controls', 
-                          self.params['adaptiveThreshWinSizeMax'], 100, self.update_detection)
-        cv2.createTrackbar('AdaptThresh Step', 'Controls', 
-                          self.params['adaptiveThreshWinSizeStep'], 20, self.update_detection)
-        cv2.createTrackbar('AdaptThresh Const', 'Controls', 
-                          self.params['adaptiveThreshConstant'], 50, self.update_detection)
-        
-        cv2.createTrackbar('Min Perimeter (*0.01)', 'Controls', 
-                          self.params['minMarkerPerimeterRate'], 20, self.update_detection)
-        cv2.createTrackbar('Max Perimeter (*0.01)', 'Controls', 
-                          self.params['maxMarkerPerimeterRate'], 1000, self.update_detection)
-        cv2.createTrackbar('Polygon Accuracy (*0.01)', 'Controls', 
-                          self.params['polygonalApproxAccuracyRate'], 20, self.update_detection)
-        cv2.createTrackbar('Min Corner Dist (*0.01)', 'Controls', 
-                          self.params['minCornerDistanceRate'], 20, self.update_detection)
-        cv2.createTrackbar('Min Dist Border', 'Controls', 
-                          self.params['minDistanceToBorder'], 20, self.update_detection)
-        
-        cv2.createTrackbar('Border Bits', 'Controls', 
-                          self.params['markerBorderBits'], 5, self.update_detection)
-        cv2.createTrackbar('Min Otsu StdDev (*0.1)', 'Controls', 
-                          self.params['minOtsuStdDev'], 200, self.update_detection)
-        cv2.createTrackbar('Perspective Pixels', 'Controls', 
-                          self.params['perspectiveRemovePixelPerCell'], 20, self.update_detection)
-        cv2.createTrackbar('Perspective Margin (*0.01)', 'Controls', 
-                          self.params['perspectiveRemoveIgnoredMarginPerCell'], 50, self.update_detection)
-        
-        cv2.createTrackbar('Corner Refine Win', 'Controls', 
-                          self.params['cornerRefinementWinSize'], 20, self.update_detection)
-        cv2.createTrackbar('Corner Refine Iter', 'Controls', 
-                          self.params['cornerRefinementMaxIterations'], 100, self.update_detection)
-        cv2.createTrackbar('Corner Refine Acc (*0.01)', 'Controls', 
-                          self.params['cornerRefinementMinAccuracy'], 100, self.update_detection)
-        cv2.createTrackbar('Error Correction (*0.01)', 'Controls', 
-                          self.params['errorCorrectionRate'], 100, self.update_detection)
-        
-        # Preprocessing parameters
-        cv2.createTrackbar('Gaussian Blur', 'Controls', 
-                          self.params['gaussianBlurKernel'], 21, self.update_detection)
-        cv2.createTrackbar('CLAHE Clip (*0.1)', 'Controls', 
-                          self.params['claheClipLimit'], 100, self.update_detection)
-        cv2.createTrackbar('CLAHE Tile Size', 'Controls', 
-                          self.params['claheTileSize'], 16, self.update_detection)
-        cv2.createTrackbar('Bilateral D', 'Controls', 
-                          self.params['bilateralD'], 20, self.update_detection)
-        cv2.createTrackbar('Bilateral SigColor', 'Controls', 
-                          self.params['bilateralSigmaColor'], 200, self.update_detection)
-        cv2.createTrackbar('Bilateral SigSpace', 'Controls', 
-                          self.params['bilateralSigmaSpace'], 200, self.update_detection)
-        
-        cv2.createTrackbar('Use Red Channel', 'Controls', 
-                          self.params['useRedChannel'], 1, self.update_detection)
-        cv2.createTrackbar('Contrast (*0.1)', 'Controls', 
-                          self.params['contrastBrightness'], 30, self.update_detection)
-        cv2.createTrackbar('Brightness', 'Controls', 
-                          self.params['brightnessOffset'], 100, self.update_detection)
-        
-        # Add specialized controls for clay/silica challenges
-        cv2.createTrackbar('White Saturation Clip', 'Controls', 
-                          0, 100, self.update_detection)  # Clip bright white values
-        cv2.createTrackbar('Shadow Boost', 'Controls', 
-                          0, 100, self.update_detection)  # Boost dark areas
-        cv2.createTrackbar('Red Tone Filter', 'Controls', 
-                          0, 1, self.update_detection)  # Filter out red background
-        cv2.createTrackbar('Histogram Equalize', 'Controls', 
-                          0, 1, self.update_detection)  # Global histogram equalization
-        cv2.createTrackbar('Morph Close Size', 'Controls', 
-                          0, 10, self.update_detection)  # Fill gaps in markers
-        cv2.createTrackbar('Edge Enhance', 'Controls', 
-                          0, 100, self.update_detection)  # Enhance edges
-        cv2.createTrackbar('Gamma Correction (*10)', 'Controls', 
-                          10, 30, self.update_detection)  # Gamma correction (1.0 = 10)
     
     def load_image(self):
         """Load the image file"""
@@ -154,66 +68,55 @@ class InteractiveArucoDetector:
         
         return True
     
-    def get_current_parameters(self):
-        """Get current parameter values from trackbars"""
+    def get_detection_parameters(self):
+        """Get ArUco detection parameters"""
         parameters = cv2.aruco.DetectorParameters()
         
-        # Get values from trackbars and convert to proper ranges
-        parameters.adaptiveThreshWinSizeMin = cv2.getTrackbarPos('AdaptThresh WinMin', 'Controls')
-        parameters.adaptiveThreshWinSizeMax = cv2.getTrackbarPos('AdaptThresh WinMax', 'Controls')
-        parameters.adaptiveThreshWinSizeStep = cv2.getTrackbarPos('AdaptThresh Step', 'Controls')
-        parameters.adaptiveThreshConstant = cv2.getTrackbarPos('AdaptThresh Const', 'Controls')
+        parameters.adaptiveThreshWinSizeMin = self.params['adaptiveThreshWinSizeMin']
+        parameters.adaptiveThreshWinSizeMax = self.params['adaptiveThreshWinSizeMax']
+        parameters.adaptiveThreshWinSizeStep = self.params['adaptiveThreshWinSizeStep']
+        parameters.adaptiveThreshConstant = self.params['adaptiveThreshConstant']
         
-        parameters.minMarkerPerimeterRate = cv2.getTrackbarPos('Min Perimeter (*0.01)', 'Controls') * 0.01
-        parameters.maxMarkerPerimeterRate = cv2.getTrackbarPos('Max Perimeter (*0.01)', 'Controls') * 0.01
-        parameters.polygonalApproxAccuracyRate = cv2.getTrackbarPos('Polygon Accuracy (*0.01)', 'Controls') * 0.01
-        parameters.minCornerDistanceRate = cv2.getTrackbarPos('Min Corner Dist (*0.01)', 'Controls') * 0.01
-        parameters.minDistanceToBorder = cv2.getTrackbarPos('Min Dist Border', 'Controls')
+        parameters.minMarkerPerimeterRate = self.params['minMarkerPerimeterRate']
+        parameters.maxMarkerPerimeterRate = self.params['maxMarkerPerimeterRate']
+        parameters.polygonalApproxAccuracyRate = self.params['polygonalApproxAccuracyRate']
+        parameters.minCornerDistanceRate = self.params['minCornerDistanceRate']
+        parameters.minDistanceToBorder = self.params['minDistanceToBorder']
         
-        parameters.markerBorderBits = cv2.getTrackbarPos('Border Bits', 'Controls')
-        parameters.minOtsuStdDev = cv2.getTrackbarPos('Min Otsu StdDev (*0.1)', 'Controls') * 0.1
-        parameters.perspectiveRemovePixelPerCell = cv2.getTrackbarPos('Perspective Pixels', 'Controls')
-        parameters.perspectiveRemoveIgnoredMarginPerCell = cv2.getTrackbarPos('Perspective Margin (*0.01)', 'Controls') * 0.01
+        parameters.markerBorderBits = self.params['markerBorderBits']
+        parameters.minOtsuStdDev = self.params['minOtsuStdDev']
+        parameters.perspectiveRemovePixelPerCell = self.params['perspectiveRemovePixelPerCell']
+        parameters.perspectiveRemoveIgnoredMarginPerCell = self.params['perspectiveRemoveIgnoredMarginPerCell']
         
         parameters.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
-        parameters.cornerRefinementWinSize = cv2.getTrackbarPos('Corner Refine Win', 'Controls')
-        parameters.cornerRefinementMaxIterations = cv2.getTrackbarPos('Corner Refine Iter', 'Controls')
-        parameters.cornerRefinementMinAccuracy = cv2.getTrackbarPos('Corner Refine Acc (*0.01)', 'Controls') * 0.01
-        parameters.errorCorrectionRate = cv2.getTrackbarPos('Error Correction (*0.01)', 'Controls') * 0.01
-        
-        # Ensure minimum values
-        if parameters.adaptiveThreshWinSizeMin < 3:
-            parameters.adaptiveThreshWinSizeMin = 3
-        if parameters.adaptiveThreshWinSizeMax < parameters.adaptiveThreshWinSizeMin:
-            parameters.adaptiveThreshWinSizeMax = parameters.adaptiveThreshWinSizeMin + 2
-        if parameters.cornerRefinementWinSize < 1:
-            parameters.cornerRefinementWinSize = 1
-        if parameters.cornerRefinementMaxIterations < 1:
-            parameters.cornerRefinementMaxIterations = 1
+        parameters.cornerRefinementWinSize = self.params['cornerRefinementWinSize']
+        parameters.cornerRefinementMaxIterations = self.params['cornerRefinementMaxIterations']
+        parameters.cornerRefinementMinAccuracy = self.params['cornerRefinementMinAccuracy']
+        parameters.errorCorrectionRate = self.params['errorCorrectionRate']
         
         return parameters
     
     def preprocess_image(self, img):
-        """Preprocess image with current parameters - specialized for clay/silica challenges"""
+        """Preprocess image - specialized for clay/silica challenges"""
         # Get preprocessing parameters
-        use_red = cv2.getTrackbarPos('Use Red Channel', 'Controls')
-        blur_kernel = cv2.getTrackbarPos('Gaussian Blur', 'Controls')
-        clahe_clip = cv2.getTrackbarPos('CLAHE Clip (*0.1)', 'Controls') * 0.1
-        clahe_tile = cv2.getTrackbarPos('CLAHE Tile Size', 'Controls')
-        bilateral_d = cv2.getTrackbarPos('Bilateral D', 'Controls')
-        bilateral_color = cv2.getTrackbarPos('Bilateral SigColor', 'Controls')
-        bilateral_space = cv2.getTrackbarPos('Bilateral SigSpace', 'Controls')
-        contrast = cv2.getTrackbarPos('Contrast (*0.1)', 'Controls') * 0.1
-        brightness = cv2.getTrackbarPos('Brightness', 'Controls') - 50
+        use_red = self.params['useRedChannel']
+        blur_kernel = self.params['gaussianBlurKernel']
+        clahe_clip = self.params['claheClipLimit']
+        clahe_tile = self.params['claheTileSize']
+        bilateral_d = self.params['bilateralD']
+        bilateral_color = self.params['bilateralSigmaColor']
+        bilateral_space = self.params['bilateralSigmaSpace']
+        contrast = self.params['contrastBrightness']
+        brightness = self.params['brightnessOffset']
         
-        # New specialized parameters
-        white_clip = cv2.getTrackbarPos('White Saturation Clip', 'Controls')
-        shadow_boost = cv2.getTrackbarPos('Shadow Boost', 'Controls')
-        red_filter = cv2.getTrackbarPos('Red Tone Filter', 'Controls')
-        hist_eq = cv2.getTrackbarPos('Histogram Equalize', 'Controls')
-        morph_size = cv2.getTrackbarPos('Morph Close Size', 'Controls')
-        edge_enhance = cv2.getTrackbarPos('Edge Enhance', 'Controls')
-        gamma_val = cv2.getTrackbarPos('Gamma Correction (*10)', 'Controls') / 10.0
+        # Specialized parameters
+        white_clip = self.params['whiteSaturationClip']
+        shadow_boost = self.params['shadowBoost']
+        red_filter = self.params['redToneFilter']
+        hist_eq = self.params['histogramEqualize']
+        morph_size = self.params['morphCloseSize']
+        edge_enhance = self.params['edgeEnhance']
+        gamma_val = self.params['gammaCorrection']
         
         # Ensure odd kernel size
         if blur_kernel % 2 == 0:
@@ -225,72 +128,14 @@ class InteractiveArucoDetector:
         if clahe_tile < 1:
             clahe_tile = 1
         
-        # STEP 1: Channel selection and red tone filtering
-        if red_filter:
-            # Create a mask to filter out red-dominant areas (clay background)
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            # Define red range in HSV (handles clay color around 180,80,53)
-            lower_red1 = np.array([0, 30, 30])
-            upper_red1 = np.array([10, 255, 255])
-            lower_red2 = np.array([170, 30, 30])
-            upper_red2 = np.array([180, 255, 255])
-            
-            red_mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-            red_mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
-            red_mask = cv2.bitwise_or(red_mask1, red_mask2)
-            
-            # Use green-blue channels more for red areas
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            green_blue = cv2.addWeighted(img[:,:,1], 0.6, img[:,:,0], 0.4, 0)
-            
-            # Blend based on red mask
-            processed = np.where(red_mask[..., np.newaxis] > 0, 
-                               green_blue[..., np.newaxis], 
-                               gray[..., np.newaxis]).squeeze()
         elif use_red:
             processed = img[:, :, 2]  # Red channel (BGR format)
         else:
             processed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # STEP 2: Handle white saturation from silica
-        if white_clip > 0:
-            # Clip extremely bright values and redistribute
-            clip_threshold = 255 - (white_clip * 2)  # 0-100 -> 255-55
-            mask_bright = processed > clip_threshold
-            processed[mask_bright] = clip_threshold
-            
-            # Optionally stretch the remaining range
-            if np.max(processed) > 0:
-                processed = (processed / np.max(processed) * 255).astype(np.uint8)
-        
-        # STEP 3: Gamma correction for non-linear brightness adjustment
-        if gamma_val != 1.0:
-            # Build lookup table for gamma correction
-            inv_gamma = 1.0 / gamma_val
-            table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
-            processed = cv2.LUT(processed, table)
-        
-        # STEP 4: Shadow boosting for dark engraved areas
-        if shadow_boost > 0:
-            # Create mask for dark areas (likely engraved)
-            dark_threshold = 80  # Adjust as needed
-            dark_mask = processed < dark_threshold
-            
-            # Boost dark areas more aggressively
-            boost_factor = 1.0 + (shadow_boost / 100.0)
-            processed_boosted = processed.astype(np.float32) * boost_factor
-            processed_boosted = np.clip(processed_boosted, 0, 255).astype(np.uint8)
-            
-            # Apply boost only to dark areas
-            processed = np.where(dark_mask, processed_boosted, processed)
-        
         # STEP 5: Apply contrast and brightness
         if contrast != 1.0 or brightness != 0:
             processed = cv2.convertScaleAbs(processed, alpha=contrast, beta=brightness)
-        
-        # STEP 6: Histogram equalization for better contrast distribution
-        if hist_eq:
-            processed = cv2.equalizeHist(processed)
         
         # STEP 7: Apply Gaussian blur
         if blur_kernel > 1:
@@ -301,38 +146,34 @@ class InteractiveArucoDetector:
             clahe = cv2.createCLAHE(clipLimit=clahe_clip, tileGridSize=(clahe_tile, clahe_tile))
             processed = clahe.apply(processed)
         
-        # STEP 9: Edge enhancement for better marker detection
-        if edge_enhance > 0:
-            # Create edge enhancement kernel
-            kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
-            edge_factor = edge_enhance / 100.0
-            enhanced = cv2.filter2D(processed, -1, kernel * edge_factor)
-            processed = cv2.addWeighted(processed, 1.0, enhanced, edge_factor, 0)
-            processed = np.clip(processed, 0, 255).astype(np.uint8)
-        
         # STEP 10: Apply bilateral filter
         if bilateral_d > 0:
             processed = cv2.bilateralFilter(processed, bilateral_d, bilateral_color, bilateral_space)
         
-        # STEP 11: Morphological closing to fill gaps in markers
-        if morph_size > 0:
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (morph_size*2+1, morph_size*2+1))
-            processed = cv2.morphologyEx(processed, cv2.MORPH_CLOSE, kernel)
-        
         return processed
     
-    def update_detection(self, val):
-        """Update detection with current parameters"""
-        if self.original_image is None:
-            return
+    def detect_markers(self, save_result=False, show_result=False):
+        """
+        Detect ArUco markers in the loaded image
         
-        # Get current parameters
-        parameters = self.get_current_parameters()
+        Args:
+            save_result (bool): Whether to save the result image
+            show_result (bool): Whether to display the result
+            
+        Returns:
+            tuple: (corners, ids, rejected, result_image)
+        """
+        if self.original_image is None:
+            print("No image loaded!")
+            return None, None, None, None
+        
+        # Get detection parameters
+        parameters = self.get_detection_parameters()
         
         # Preprocess image
         processed = self.preprocess_image(self.original_image)
         
-        # Convert to BGR for ArUco detection
+        # Convert to BGR for ArUco detection if needed
         if len(processed.shape) == 2:
             processed_bgr = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
         else:
@@ -345,10 +186,24 @@ class InteractiveArucoDetector:
         
         # Create result image
         result_img = self.original_image.copy()
-        info_text = []
         
         if ids is not None:
             cv2.aruco.drawDetectedMarkers(result_img, corners, ids)
+            print(f"Detected {len(ids)} markers: {ids.flatten()}")
+            
+            # Print detailed corner information
+            for i, corner_set in enumerate(corners):
+                marker_id = ids[i][0]
+                corners_text = ", ".join([f"({c[0]:.1f},{c[1]:.1f})" for c in corner_set[0]])
+                print(f"Marker {marker_id}: {corners_text}")
+        else:
+            print("No markers detected")
+        
+        print(f"Rejected candidates: {len(rejected)}")
+        
+        # Add text overlay to result image
+        info_text = []
+        if ids is not None:
             info_text.append(f"Detected: {len(ids)} markers")
             info_text.append(f"IDs: {ids.flatten()}")
         else:
@@ -356,135 +211,68 @@ class InteractiveArucoDetector:
         
         info_text.append(f"Rejected: {len(rejected)} candidates")
         
-        # Add text overlay
         for i, text in enumerate(info_text):
             cv2.putText(result_img, text, (10, 30 + i*25), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         
-        # Display images
-        cv2.imshow('Original', self.original_image)
-        cv2.imshow('Detection Result', result_img)
-        cv2.imshow('Processed', processed)
+        # Show result if requested
+        if show_result:
+            cv2.imshow('Detection Result', result_img)
+            cv2.imshow('Processed Image', processed)
+            print("Press any key to close windows...")
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
         
-        # Print detection info
-        if ids is not None:
-            print(f"\nDetected {len(ids)} markers: {ids.flatten()}")
-            for i, corner_set in enumerate(corners):
-                marker_id = ids[i][0]
-                corners_text = ", ".join([f"({c[0]:.1f},{c[1]:.1f})" for c in corner_set[0]])
-                print(f"Marker {marker_id}: {corners_text}")
+        return corners, ids, rejected, result_img
     
-    def save_current_parameters(self):
+    def update_parameters(self, **kwargs):
+        """
+        Update detection parameters
+        
+        Args:
+            **kwargs: Parameter name-value pairs to update
+        """
+        for key, value in kwargs.items():
+            if key in self.params:
+                self.params[key] = value
+                print(f"Updated {key}: {value}")
+            else:
+                print(f"Unknown parameter: {key}")
+    
+    def get_parameters(self):
+        """Get current parameters"""
+        return self.params.copy()
+    
+    def save_parameters(self, filename='aruco_parameters.txt'):
         """Save current parameters to file"""
-        params_dict = {}
-        trackbar_names = [
-            'AdaptThresh WinMin', 'AdaptThresh WinMax', 'AdaptThresh Step', 'AdaptThresh Const',
-            'Min Perimeter (*0.01)', 'Max Perimeter (*0.01)', 'Polygon Accuracy (*0.01)', 
-            'Min Corner Dist (*0.01)', 'Min Dist Border', 'Border Bits', 'Min Otsu StdDev (*0.1)',
-            'Perspective Pixels', 'Perspective Margin (*0.01)', 'Corner Refine Win', 
-            'Corner Refine Iter', 'Corner Refine Acc (*0.01)', 'Error Correction (*0.01)',
-            'Gaussian Blur', 'CLAHE Clip (*0.1)', 'CLAHE Tile Size', 'Bilateral D',
-            'Bilateral SigColor', 'Bilateral SigSpace', 'Use Red Channel', 
-            'Contrast (*0.1)', 'Brightness'
-        ]
+        with open(filename, 'w') as f:
+            f.write("ArUco Detection Parameters\n")
+            f.write("=" * 30 + "\n\n")
+            
+            # Detection parameters
+            f.write("Detection Parameters:\n")
+            f.write("-" * 20 + "\n")
+            for key, value in self.params.items():
+                if key not in ['gaussianBlurKernel', 'claheClipLimit', 'claheTileSize', 
+                              'bilateralD', 'bilateralSigmaColor', 'bilateralSigmaSpace',
+                              'useRedChannel', 'contrastBrightness', 'brightnessOffset',
+                              'whiteSaturationClip', 'shadowBoost', 'redToneFilter',
+                              'histogramEqualize', 'morphCloseSize', 'edgeEnhance', 'gammaCorrection']:
+                    f.write(f"{key}: {value}\n")
+            
+            f.write("\nPreprocessing Parameters:\n")
+            f.write("-" * 25 + "\n")
+            preprocessing_params = ['gaussianBlurKernel', 'claheClipLimit', 'claheTileSize', 
+                                  'bilateralD', 'bilateralSigmaColor', 'bilateralSigmaSpace',
+                                  'useRedChannel', 'contrastBrightness', 'brightnessOffset',
+                                  'whiteSaturationClip', 'shadowBoost', 'redToneFilter',
+                                  'histogramEqualize', 'morphCloseSize', 'edgeEnhance', 'gammaCorrection']
+            
+            for key in preprocessing_params:
+                if key in self.params:
+                    f.write(f"{key}: {self.params[key]}\n")
         
-        for name in trackbar_names:
-            params_dict[name] = cv2.getTrackbarPos(name, 'Controls')
-        
-        with open('aruco_parameters.txt', 'w') as f:
-            for name, value in params_dict.items():
-                f.write(f"{name}: {value}\n")
-        
-        print("Parameters saved to 'aruco_parameters.txt'")
-    
-    def run(self):
-        """Run the interactive detector"""
-        if not self.load_image():
-            return
-        
-        print("Interactive ArUco Detector")
-        print("Controls:")
-        print("- Look for the 'Controls' window with trackbars")
-        print("- Adjust trackbars to change detection parameters")
-        print("- Press 's' to save current parameters")
-        print("- Press 'r' to reset to defaults")
-        print("- Press 'q' to quit")
-        print("\nIf you don't see the Controls window, try:")
-        print("- Check your taskbar for additional OpenCV windows")
-        print("- Try Alt+Tab to cycle through windows")
-        print("- The window might be behind other windows")
-        
-        # Make sure all windows are visible
-        cv2.namedWindow('Original', cv2.WINDOW_NORMAL)
-        cv2.namedWindow('Detection Result', cv2.WINDOW_NORMAL)
-        cv2.namedWindow('Processed', cv2.WINDOW_NORMAL)
-        
-        # Position windows so they don't overlap
-        cv2.moveWindow('Original', 600, 50)
-        cv2.moveWindow('Detection Result', 600, 400)
-        cv2.moveWindow('Processed', 1100, 50)
-        
-        # Initial detection
-        self.update_detection(0)
-        
-        # Make sure Controls window stays on top initially
-        cv2.setWindowProperty('Controls', cv2.WND_PROP_TOPMOST, 1)
-        cv2.waitKey(100)  # Brief pause
-        cv2.setWindowProperty('Controls', cv2.WND_PROP_TOPMOST, 0)
-        
-        while True:
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                break
-            elif key == ord('s'):
-                self.save_current_parameters()
-            elif key == ord('r'):
-                # Reset to default values
-                for param_name, default_value in self.params.items():
-                    trackbar_name = self.get_trackbar_name(param_name)
-                    if trackbar_name:
-                        cv2.setTrackbarPos(trackbar_name, 'Controls', default_value)
-                self.update_detection(0)
-            elif key == ord('h'):
-                # Help - bring Controls window to front
-                cv2.setWindowProperty('Controls', cv2.WND_PROP_TOPMOST, 1)
-                cv2.waitKey(100)
-                cv2.setWindowProperty('Controls', cv2.WND_PROP_TOPMOST, 0)
-                print("Brought Controls window to front")
-        
-        cv2.destroyAllWindows()
-    
-    def get_trackbar_name(self, param_name):
-        """Map parameter names to trackbar names"""
-        mapping = {
-            'adaptiveThreshWinSizeMin': 'AdaptThresh WinMin',
-            'adaptiveThreshWinSizeMax': 'AdaptThresh WinMax',
-            'adaptiveThreshWinSizeStep': 'AdaptThresh Step',
-            'adaptiveThreshConstant': 'AdaptThresh Const',
-            'minMarkerPerimeterRate': 'Min Perimeter (*0.01)',
-            'maxMarkerPerimeterRate': 'Max Perimeter (*0.01)',
-            'polygonalApproxAccuracyRate': 'Polygon Accuracy (*0.01)',
-            'minCornerDistanceRate': 'Min Corner Dist (*0.01)',
-            'minDistanceToBorder': 'Min Dist Border',
-            'markerBorderBits': 'Border Bits',
-            'minOtsuStdDev': 'Min Otsu StdDev (*0.1)',
-            'perspectiveRemovePixelPerCell': 'Perspective Pixels',
-            'perspectiveRemoveIgnoredMarginPerCell': 'Perspective Margin (*0.01)',
-            'cornerRefinementWinSize': 'Corner Refine Win',
-            'cornerRefinementMaxIterations': 'Corner Refine Iter',
-            'cornerRefinementMinAccuracy': 'Corner Refine Acc (*0.01)',
-            'errorCorrectionRate': 'Error Correction (*0.01)',
-            'gaussianBlurKernel': 'Gaussian Blur',
-            'claheClipLimit': 'CLAHE Clip (*0.1)',
-            'claheTileSize': 'CLAHE Tile Size',
-            'bilateralD': 'Bilateral D',
-            'bilateralSigmaColor': 'Bilateral SigColor',
-            'bilateralSigmaSpace': 'Bilateral SigSpace',
-            'useRedChannel': 'Use Red Channel',
-            'contrastBrightness': 'Contrast (*0.1)',
-            'brightnessOffset': 'Brightness'
-        }
-        return mapping.get(param_name)
+        print(f"Parameters saved to '{filename}'")
 
 def create_test_marker(marker_id=0, size=200):
     """Create a test ArUco marker for testing"""
@@ -495,16 +283,237 @@ def create_test_marker(marker_id=0, size=200):
     bordered = cv2.copyMakeBorder(marker_img, 50, 50, 50, 50, 
                                   cv2.BORDER_CONSTANT, value=255)
     
-    cv2.imwrite(f'test_marker_{marker_id}.png', bordered)
-    print(f"Test marker {marker_id} saved as 'test_marker_{marker_id}.png'")
+    filename = f'test_marker_{marker_id}.png'
+    cv2.imwrite(filename, bordered)
+    print(f"Test marker {marker_id} saved as '{filename}'")
     
     return bordered
 
 if __name__ == "__main__":
-    # Create test markers
-    create_test_marker(0)
-    create_test_marker(1)
+    # Example usage
     
-    # Run interactive detector
-    detector = InteractiveArucoDetector('azulejo3.jpg')
-    detector.run()
+    # Initialize detector
+    detector = ArucoDetector('azulejo5.jpg')
+    
+    # Detect markers with default parameters
+    print("=== Detection with default parameters ===")
+    corners, ids, rejected, result = detector.detect_markers(save_result=True, show_result=True)
+
+    # Map marker IDs to positions and their corresponding corner indices
+    positions = {}
+    id_to_position = {10: 'top-right', 12: 'top-left', 11: 'bottom-right', 13: 'bottom-left'}
+
+    # ArUco markers have 4 corners in clockwise order starting from top-left:
+    # Corner 0: top-left of marker
+    # Corner 1: top-right of marker  
+    # Corner 2: bottom-right of marker
+    # Corner 3: bottom-left of marker
+
+    # Map each ROI corner to the corresponding marker corner
+    corner_mapping = {
+        'top-right': 0,     # Use top-left corner of top-left marker
+        'top-left': 3,    # Use top-right corner of top-right marker
+        'bottom-right': 1, # Use bottom-right corner of bottom-right marker
+        'bottom-left': 2   # Use bottom-left corner of bottom-left marker
+    }
+
+    avarage_width = 0
+
+    if ids is not None:
+        for i, marker_id in enumerate(ids):
+            marker_corners = corners[i][0]  # Get the 4 corners of this marker
+            
+            marker_id_val = int(marker_id[0])
+            if marker_id_val in id_to_position:
+                position_name = id_to_position[marker_id_val]
+                corner_index = corner_mapping[position_name]
+                
+                # Get the specific corner point for this ROI corner
+                corner_point = marker_corners[corner_index]
+                
+                positions[position_name] = {
+                    'x': int(corner_point[0]), 
+                    'y': int(corner_point[1]),
+                    'corners': marker_corners,
+                    'width': int(np.linalg.norm(marker_corners[0] - marker_corners[1])),
+                }
+
+        print(f"Detected positions: {positions}")
+
+        if len(positions) == 4:
+            # Calculate the center of all corner points (not marker centers)
+            corner_points = [(pos['x'], pos['y']) for pos in positions.values()]
+            avg_center = (int(np.mean([c[0] for c in corner_points])), int(np.mean([c[1] for c in corner_points])))
+            avarage_width = int(np.mean([pos['width'] for pos in positions.values()]))
+            print(f"Average Width: {avarage_width}")
+            
+            padding_config = {
+            'top-left': {'x': -12, 'y': -12},        # Move left and up
+            'top-right': {'x': 12, 'y': -12},        # Move right and up
+            'bottom-right': {'x': 12, 'y': 12},      # Move right and down
+            'bottom-left': {'x': -12, 'y': 12}       # Move left and down
+        }
+        
+        # Alternative: uniform padding for all corners
+        # uniform_padding = 10
+        # padding_config = {
+        #     'top-left': {'x': -uniform_padding, 'y': -uniform_padding},
+        #     'top-right': {'x': uniform_padding, 'y': -uniform_padding},
+        #     'bottom-right': {'x': uniform_padding, 'y': uniform_padding},
+        #     'bottom-left': {'x': -uniform_padding, 'y': uniform_padding}
+        # }
+        
+        # Calculate padded corners
+        padded_corners = {}
+        for corner_name in ['top-left', 'top-right', 'bottom-right', 'bottom-left']:
+            if corner_name in positions:
+                original_x = positions[corner_name]['x']
+                original_y = positions[corner_name]['y']
+                pad_x = padding_config[corner_name]['x']
+                pad_y = padding_config[corner_name]['y']
+                
+                padded_corners[corner_name] = {
+                    'x': original_x + pad_x,
+                    'y': original_y + pad_y
+                }
+        
+        # Create corner points for drawing and transformation
+        tl = (padded_corners['top-left']['x'], padded_corners['top-left']['y'])
+        tr = (padded_corners['top-right']['x'], padded_corners['top-right']['y'])
+        br = (padded_corners['bottom-right']['x'], padded_corners['bottom-right']['y'])
+        bl = (padded_corners['bottom-left']['x'], padded_corners['bottom-left']['y'])
+        
+        # Draw polygon connecting the padded ROI corners
+        roi_corners = np.array([tl, tr, br, bl], dtype=np.int32)
+        #cv2.polylines(result, [roi_corners], isClosed=True, color=(0, 255, 0), thickness=2)
+        
+        # Draw the original fiducial corners for reference
+        original_corners = np.array([
+            (positions['top-left']['x'], positions['top-left']['y']),
+            (positions['top-right']['x'], positions['top-right']['y']),
+            (positions['bottom-right']['x'], positions['bottom-right']['y']),
+            (positions['bottom-left']['x'], positions['bottom-left']['y'])
+        ], dtype=np.int32)
+        #cv2.polylines(result, [original_corners], isClosed=True, color=(255, 0, 0), thickness=1)
+        
+        # Mark each original corner point
+        for pos_name, pos_data in positions.items():
+            cv2.circle(result, (pos_data['x'], pos_data['y']), 4, (0, 0, 255), -1)
+            cv2.putText(result, f"{pos_name} (orig)", (pos_data['x'] + 10, pos_data['y'] - 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+        
+        # Mark each padded corner point
+        for corner_name, corner_data in padded_corners.items():
+            cv2.circle(result, (corner_data['x'], corner_data['y']), 6, (0, 255, 0), -1)
+            cv2.putText(result, f"{corner_name} (pad)", (corner_data['x'] + 10, corner_data['y'] + 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
+        
+        # Calculate the center of the padded ROI
+        padded_points = [(corner['x'], corner['y']) for corner in padded_corners.values()]
+        roi_center = (int(np.mean([p[0] for p in padded_points])), int(np.mean([p[1] for p in padded_points])))
+        cv2.circle(result, roi_center, 8, (255, 255, 0), -1)
+        cv2.putText(result, "ROI Center", (roi_center[0] - 30, roi_center[1] - 15), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
+
+        # Extract ROI using perspective warp with the padded corner points
+        src_pts = np.array([
+            [tl[0], tl[1]],     # top-left
+            [tr[0], tr[1]],     # top-right
+            [br[0], br[1]],     # bottom-right
+            [bl[0], bl[1]]      # bottom-left
+        ], dtype=np.float32)
+        
+        # Define destination rectangle (square output)
+        width = height = 600
+        
+        # Map to a square with proper orientation
+        dst_pts = np.array([
+            [0, 0],           # top-left
+            [width, 0],       # top-right
+            [width, height],  # bottom-right
+            [0, height]       # bottom-left
+        ], dtype=np.float32)
+        
+        # Get perspective transform matrix and apply warp
+        matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
+        warped = cv2.warpPerspective(result, matrix, (width, height))
+
+        # Grid parameters
+        grid_rows = 9
+        grid_cols = 9
+        cell_width = 39    # W: width of each grid cell
+        cell_height = 39   # H: height of each grid cell
+        gap = 30           # g: gap between grid cells
+        
+        # Calculate total grid dimensions
+        total_grid_width = (grid_cols * cell_width) + ((grid_cols - 1) * gap)
+        total_grid_height = (grid_rows * cell_height) + ((grid_rows - 1) * gap)
+        
+        # Calculate starting position to center the grid
+        start_x = (width - total_grid_width) // 2
+        start_y = (height - total_grid_height) // 2
+        
+        # Create a copy of warped image for grid overlay
+        warped_with_grid = warped.copy()
+        
+        # Draw grid cells
+        for row in range(grid_rows):
+            for col in range(grid_cols):
+                # Calculate cell position
+                cell_x = start_x + col * (cell_width + gap)
+                cell_y = start_y + row * (cell_height + gap)
+                
+                # Draw cell rectangle
+                cv2.rectangle(warped_with_grid, 
+                            (cell_x, cell_y), 
+                            (cell_x + cell_width, cell_y + cell_height), 
+                            (0, 255, 255), 2)  # Yellow grid lines
+                
+                # Optional: Add cell coordinates text (comment out if not needed)
+                # cv2.putText(warped_with_grid, f"{row},{col}", 
+                #            (cell_x + 2, cell_y + 15), 
+                #            cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
+        
+        # Draw grid outline
+        cv2.rectangle(warped_with_grid, 
+                    (start_x, start_y), 
+                    (start_x + total_grid_width, start_y + total_grid_height), 
+                    (255, 0, 255), 3)  # Magenta outline
+        
+        # Display grid information
+        print(f"Applied padding:")
+        for corner_name, pad_config in padding_config.items():
+            if corner_name in positions:
+                print(f"  {corner_name}: x={pad_config['x']:+d}, y={pad_config['y']:+d}")
+        
+        print(f"\nGrid configuration:")
+        print(f"  Grid size: {grid_rows}x{grid_cols}")
+        print(f"  Cell dimensions: {cell_width}x{cell_height}")
+        print(f"  Gap size: {gap}")
+        print(f"  Total grid size: {total_grid_width}x{total_grid_height}")
+        print(f"  Grid position: ({start_x}, {start_y})")
+        
+        # Display the warped images
+        cv2.imshow("Warped Perspective View", warped)
+        cv2.imshow("Warped with Grid", warped_with_grid)
+        
+        # Display padding information
+        print(f"Applied padding:")
+        for corner_name, pad_config in padding_config.items():
+            if corner_name in positions:
+                print(f"  {corner_name}: x={pad_config['x']:+d}, y={pad_config['y']:+d}")
+        
+        # Display the warped image
+        cv2.imshow("Warped Perspective View", warped)
+                
+    else:
+        print(f"Not all markers detected. Found {len(positions)} markers:")
+        for pos, data in positions.items():
+            print(f"  {pos}: ({data['x']}, {data['y']})")
+
+    # Display the original image with annotations
+    cv2.imshow("Detected Markers", result)
+
+    # Wait for key press and close windows
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
