@@ -238,86 +238,88 @@ def create_image_grid(idx, images, cell_size=15, cols=9, img_width=1000):
     cell_size = min(cell_size, img_height // rows)  # Ensure it fits in height
 
     image_index = 0
+    marker_id = idx  # Starting marker ID
+
     for row in range(rows):
         for col in range(cols):
-            if image_index >= len(images):
-                break
-            
-            # get the 4 4x4 corners of cols and rows and skip them
-            if col < 2 and row < 2:
-                continue
-            if col >= cols - 2 and row >= rows - 2:
-                continue
-            if col < 2 and row >= rows - 2:
-                continue
-            if col >= cols - 2 and row < 2:
-                continue
-
-            print(f"Processing image {image_index}/{len(images)} at grid position ({col}, {row})")
-            img = images[image_index]            
+            # Calculate position for this grid cell
             x_pos = col * cell_size + margin + col * gap
             y_pos = row * cell_size + margin + row * gap
+            
+            # Check if this is a corner position (where we skip images)
+            is_corner = False
+            corner_index = -1
+            
+            if col < 2 and row < 2:  # Top-left corner
+                is_corner = True
+                if col == 0 and row == 0:
+                    corner_index = 0
+            elif col >= cols - 2 and row >= rows - 2:  # Bottom-right corner  
+                is_corner = True
+                if col == cols - 2 and row == rows - 2:
+                    corner_index = 3
+            elif col < 2 and row >= rows - 2:  # Bottom-left corner
+                is_corner = True
+                if col == 0 and row == rows - 2:
+                    corner_index = 2
+            elif col >= cols - 2 and row < 2:  # Top-right corner
+                is_corner = True
+                if col == cols - 2 and row == 0:
+                    corner_index = 1
+            
+            if is_corner:
+                # Draw fiducial marker if this is the specific corner cell
+                if corner_index >= 0:
+                    # White background size spans 2 cells + 1 gap
+                    white_bg_size = cell_size * 2 + gap
+                    
+                    # Calculate padding and marker size
+                    padding = int(cell_size / 5)
+                    marker_size = white_bg_size - (2 * padding)
+                    
+                    # Create drawing context
+                    draw = ImageDraw.Draw(grid_img)
+                    
+                    # Draw white rectangle background
+                    draw.rectangle([
+                        x_pos, y_pos, 
+                        x_pos + white_bg_size, y_pos + white_bg_size
+                    ], fill='white')
+                    
+                    # Load and resize marker image
+                    marker_id_str = f"{marker_id:03d}"
+                    marker_img = Image.open(f"aruco_markers/aruco_marker_{marker_id_str}.png")
+                    marker_img = marker_img.resize((marker_size, marker_size))
+                    
+                    # Convert to RGBA if not already
+                    if marker_img.mode != 'RGBA':
+                        marker_img = marker_img.convert('RGBA')
+                    
+                    # Calculate marker position (centered within white background)
+                    marker_x = x_pos + padding
+                    marker_y = y_pos + padding
+                    
+                    # Paste the marker
+                    grid_img.paste(marker_img, (marker_x, marker_y), marker_img)
+                    
+                    marker_id += 1
+                
+                continue  # Skip placing images in corner areas
+            
+            # Place regular image if we have one
+            if image_index >= len(images):
+                break
+                
+            print(f"Processing image {image_index}/{len(images)} at grid position ({col}, {row})")
+            img = images[image_index]
             
             # Resize image to fit in cell
             img_resized = img.resize((cell_size, cell_size))
             
             # Paste the resized image into the grid
             grid_img.paste(img_resized, (x_pos, y_pos))
-
-            image_index = image_index + 1
-
-    # Draw fiducial markers in the corners
-    # White background size = cell_size * 2 + gap (as specified)
-    white_bg_size = cell_size * 2 + gap
-
-    # Calculate marker size (leaving some padding within the white background)
-    padding = int((cell_size / 5))  # 10% of cell_size as padding
-    marker_size = white_bg_size - (2 * padding)
-
-    # Calculate positions for white backgrounds (centered in each corner area)
-    corner_positions = [
-        # Top left corner
-        (margin, margin),
-        # Top right corner  
-        (img_width - margin - white_bg_size, margin),
-        # Bottom left corner
-        (margin, img_height - margin - white_bg_size),
-        # Bottom right corner
-        (img_width - margin - white_bg_size, img_height - margin - white_bg_size)
-    ]
-
-    # Create a drawing context for the white backgrounds
-    draw = ImageDraw.Draw(grid_img)
-
-    for i in range(4):
-        # Calculate marker ID
-        id = idx + i
-        id_str = f"{id:03d}"
-        
-        # Get corner position for white background
-        bg_x, bg_y = corner_positions[i]
-        
-        # Draw white rectangle background
-        draw.rectangle([
-            bg_x, bg_y, 
-            bg_x + white_bg_size, bg_y + white_bg_size
-        ], fill='white')
-        
-        # Load and resize marker image
-        marker_img = Image.open(f"aruco_markers/aruco_marker_{id_str}.png")
-        marker_img = marker_img.resize((marker_size, marker_size))
-        
-        # Convert to RGBA if not already
-        if marker_img.mode != 'RGBA':
-            marker_img = marker_img.convert('RGBA')
-        
-        # Calculate marker position (centered within white background)
-        marker_x = bg_x + padding
-        marker_y = bg_y + padding
-        
-        # Paste the marker
-        grid_img.paste(marker_img, (marker_x, marker_y), marker_img)
-    
+            
+            image_index += 1
 
     return grid_img
 
@@ -371,6 +373,8 @@ def process_csv_to_individual_characters(csv_file_path, output_dir="character_pa
         lng_data = row[lng_col] if lng_col else None
         name_data = row[name_col] if name_col else None
         date_data = row[date_col] if date_col else None
+        
+        tile_data = row.get('tile', None)
 
         
         # Normalize each field to 18 characters
@@ -386,6 +390,7 @@ def process_csv_to_individual_characters(csv_file_path, output_dir="character_pa
         path = os.path.join(output_dir, f"{re.sub(r'[^A-Za-z0-9_]', '', filename).lower()}.png")
 
         data = f"{normalized_name};{normalized_date};{normalized_lat};{normalized_lng}"
+        data = data.ljust(65, '|')        
 
         max_length = max(max_length, len(data))
         
@@ -409,7 +414,27 @@ def process_csv_to_individual_characters(csv_file_path, output_dir="character_pa
         
         print(f"  Saved {len(data_images)} character images ")
         # create image grid        
-        create_image_grid(idx, data_images, cell_size=20, cols=9, img_width=1000).save(path)
+        grid_img = create_image_grid(idx, data_images, cell_size=20, cols=9, img_width=1000)
+
+        grid_img.save(path)        
+
+        # get image in inverted/{tile_data}.png
+        tile_path = os.path.join("inverted", f"tile_{tile_data}.png")
+        tile_img = Image.open(tile_path)
+        tile_img = tile_img.resize((1000, 1000))
+        
+
+        # grid image in the tile image
+        tile_img.paste(grid_img, (0, 0), grid_img)
+
+        # convert to binary image for laser engraving
+        tile_img = tile_img.convert("1")
+
+        tile_img.save(os.path.join("tiles", f"{tile_data}.png"))
+
+        # data_images.append(tile_img)
+
+
         print(f"  Created grid image for entry {row_id}")
     return max_length
 
