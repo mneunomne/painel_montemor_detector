@@ -4,6 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 import re
 
+max_length = 0
+
 def normalize_text(text, max_length=18):
     """
     Normalize text to fit within max_length characters.
@@ -13,27 +15,9 @@ def normalize_text(text, max_length=18):
         text = "UNKNOWN"
     else:
         text = str(text)
-
-    # replace á with a, é with e, etc.
-    text = re.sub(r'[áàäâ]', 'A', text)
-    text = re.sub(r'[éèëê]', 'E', text)
-    text = re.sub(r'[íìïî]', 'I', text)
-    text = re.sub(r'[óòöô]', 'O', text)
-    text = re.sub(r'[úùüû]', 'U', text)
-    text = re.sub(r'[ñ]', 'N', text)
-    text = re.sub(r'[ç]', 'C', text)
-    
-    # Remove special characters except spaces, periods, commas, and hyphens
-    text = re.sub(r'[^A-Za-z0-9\s.,-]', '', text)
-    
+        
     # Convert to uppercase
     text = text.upper().strip()
-    
-    # Truncate or pad to exact length
-    if len(text) > max_length:
-        text = text[:max_length]
-    else:
-        text = text.ljust(max_length)
     
     return text
 
@@ -47,47 +31,18 @@ def normalize_coordinate(coord, coord_type='lat'):
     # Convert to string with reasonable precision
     coord_str = f"{float(coord):.6f}"
     
-    # Add coordinate type prefix if needed
-    if coord_type == 'lat':
-        prefix = "LAT"
-    else:
-        prefix = "LNG"
-    
-    # Format as "LAT-12.345678" or similar
-    formatted = f"{prefix}{coord_str}"
-    
-    # Truncate or pad to 18 characters
-    if len(formatted) > 18:
-        formatted = formatted[:18]
-    else:
-        formatted = formatted.ljust(18)
-    
-    return formatted
+    return coord_str
 
 def normalize_date(date_str):
     """
     Normalize date to fit within 18 characters.
     """
-    if pd.isna(date_str):
-        return "UNKNOWN DATE".ljust(18)
     
     date_str = str(date_str).strip()
-    
-    # Try to extract year if it's a complex date
-    year_match = re.search(r'\b(1[4-9]\d{2}|20\d{2})\b', date_str)
-    if year_match:
-        year = year_match.group(1)
-        date_str = f"YEAR {year}"
     
     # Normalize the date string
     date_str = re.sub(r'[^A-Za-z0-9\s.,-]', '', date_str)
     date_str = date_str.upper().strip()
-    
-    # Truncate or pad to 18 characters
-    if len(date_str) > 18:
-        date_str = date_str[:18]
-    else:
-        date_str = date_str.ljust(18)
     
     return date_str
 
@@ -155,49 +110,37 @@ def get_patterns():
         '?': [[1,1,1], [0,1,0], [0,1,0]],      # Question mark
         ':': [[0,1,0], [0,0,0], [0,1,0]],      # Colon
         ';': [[0,1,0], [0,0,0], [1,0,0]],      # Semicolon
+        '|': [[0,0,0], [0,1,0], [0,0,0]],      # Separator
     }
 
-def create_pattern_image(text, cell_size=20):
+def create_character_image(char, cell_size=20):
     """
-    Create a pattern image from text using 3x3 patterns for each character.
+    Create a pattern image for a single character using its 3x3 pattern.
     """
     patterns = get_patterns()
     
-    # Calculate image dimensions
-    num_chars = len(text)
-    img_width = num_chars * 3 * cell_size
-    img_height = 3 * cell_size
+    # Create 5x5 image (3x3 pattern with 2 cell border border)
+    img_width = 5 * cell_size
+    img_height = 5 * cell_size
     
     # Create image
     img = Image.new('RGB', (img_width, img_height), 'white')
     draw = ImageDraw.Draw(img)
     
-    # Draw patterns
-    for char_idx, char in enumerate(text):
-        if char in patterns:
-            pattern = patterns[char]
-            
-            # Draw 3x3 pattern
-            for row in range(3):
-                for col in range(3):
-                    x1 = (char_idx * 3 + col) * cell_size
-                    y1 = row * cell_size
-                    x2 = x1 + cell_size
-                    y2 = y1 + cell_size
-                    
-                    color = 'black' if pattern[row][col] == 1 else 'white'
-                    draw.rectangle([x1, y1, x2, y2], fill=color, outline='gray')
-        else:
-            # Unknown character - use error pattern
-            for row in range(3):
-                for col in range(3):
-                    x1 = (char_idx * 3 + col) * cell_size
-                    y1 = row * cell_size
-                    x2 = x1 + cell_size
-                    y2 = y1 + cell_size
-                    
-                    color = 'red' if (row + col) % 2 == 0 else 'white'
-                    draw.rectangle([x1, y1, x2, y2], fill=color, outline='gray')
+    # Get pattern for character
+    if char in patterns:
+        pattern = patterns[char]
+        
+        # Draw 3x3 pattern in the 5x5 grid
+        for row in range(3):
+            for col in range(3):
+                x1 = (col + 1) * cell_size
+                y1 = (row + 1) * cell_size
+                x2 = x1 + cell_size
+                y2 = y1 + cell_size
+                
+                color = 'black' if pattern[row][col] == 1 else 'white'
+                draw.rectangle([x1, y1, x2, y2], fill=color, outline='white')
     
     return img
 
@@ -232,7 +175,7 @@ def create_dictionary_image(output_path="pattern_dictionary.png", img_size=1000)
     grid_width = chars_per_row * total_item_width
     start_x = (img_size - grid_width) // 2
     start_y = 50
-        
+    
     # Sort characters for better organization
     sorted_chars = sorted(patterns.keys(), key=lambda x: (x.isdigit(), x.isalpha(), x))
     
@@ -273,10 +216,117 @@ def create_dictionary_image(output_path="pattern_dictionary.png", img_size=1000)
     print(f"Dictionary image saved as '{output_path}'")
     return img
 
-def process_csv_to_patterns(csv_file_path, output_dir="pattern_images"):
+# create full image with data grid with individual character images
+def create_image_grid(idx, images, cell_size=15, cols=9, img_width=1000):
     """
-    Process CSV file and generate pattern images for each entry.
+    Create a grid image from a list of images.
+    Each image will be resized to fit in the grid cells.
     """
+    rows = cols  # Calculate number of rows needed
+
+    img_height = img_width
+    
+    # Create a tranparent blank image
+    grid_img = Image.new('RGBA', (img_width, img_height), (255, 255, 255, 0))
+
+    draw = ImageDraw.Draw(grid_img)
+
+    gap = 50  # Gap between images
+
+    margin = 40  # Margin around the grid
+    cell_size = (img_width - 2 * margin - (cols - 1) * gap) // cols
+    cell_size = min(cell_size, img_height // rows)  # Ensure it fits in height
+
+    image_index = 0
+    for row in range(rows):
+        for col in range(cols):
+            if image_index >= len(images):
+                break
+            
+            # get the 4 4x4 corners of cols and rows and skip them
+            if col < 2 and row < 2:
+                continue
+            if col >= cols - 2 and row >= rows - 2:
+                continue
+            if col < 2 and row >= rows - 2:
+                continue
+            if col >= cols - 2 and row < 2:
+                continue
+
+            print(f"Processing image {image_index}/{len(images)} at grid position ({col}, {row})")
+            img = images[image_index]            
+            x_pos = col * cell_size + margin + col * gap
+            y_pos = row * cell_size + margin + row * gap
+            
+            # Resize image to fit in cell
+            img_resized = img.resize((cell_size, cell_size))
+            
+            # Paste the resized image into the grid
+            grid_img.paste(img_resized, (x_pos, y_pos))
+
+            image_index = image_index + 1
+
+    # Draw fiducial markers in the corners
+    # White background size = cell_size * 2 + gap (as specified)
+    white_bg_size = cell_size * 2 + gap
+
+    # Calculate marker size (leaving some padding within the white background)
+    padding = int((cell_size / 5))  # 10% of cell_size as padding
+    marker_size = white_bg_size - (2 * padding)
+
+    # Calculate positions for white backgrounds (centered in each corner area)
+    corner_positions = [
+        # Top left corner
+        (margin, margin),
+        # Top right corner  
+        (img_width - margin - white_bg_size, margin),
+        # Bottom left corner
+        (margin, img_height - margin - white_bg_size),
+        # Bottom right corner
+        (img_width - margin - white_bg_size, img_height - margin - white_bg_size)
+    ]
+
+    # Create a drawing context for the white backgrounds
+    draw = ImageDraw.Draw(grid_img)
+
+    for i in range(4):
+        # Calculate marker ID
+        id = idx + i
+        id_str = f"{id:03d}"
+        
+        # Get corner position for white background
+        bg_x, bg_y = corner_positions[i]
+        
+        # Draw white rectangle background
+        draw.rectangle([
+            bg_x, bg_y, 
+            bg_x + white_bg_size, bg_y + white_bg_size
+        ], fill='white')
+        
+        # Load and resize marker image
+        marker_img = Image.open(f"aruco_markers/aruco_marker_{id_str}.png")
+        marker_img = marker_img.resize((marker_size, marker_size))
+        
+        # Convert to RGBA if not already
+        if marker_img.mode != 'RGBA':
+            marker_img = marker_img.convert('RGBA')
+        
+        # Calculate marker position (centered within white background)
+        marker_x = bg_x + padding
+        marker_y = bg_y + padding
+        
+        # Paste the marker
+        grid_img.paste(marker_img, (marker_x, marker_y), marker_img)
+    
+
+    return grid_img
+
+def process_csv_to_individual_characters(csv_file_path, output_dir="character_patterns"):
+    """
+    Process CSV file and generate individual character pattern images for each entry.
+    Each entry gets its own folder with individual character images.
+    """
+    max_length = 0
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     
@@ -290,7 +340,6 @@ def process_csv_to_patterns(csv_file_path, output_dir="pattern_images"):
         return
     
     # Try to identify the correct columns
-    # Look for common column names
     lat_col = None
     lng_col = None
     name_col = None
@@ -311,46 +360,58 @@ def process_csv_to_patterns(csv_file_path, output_dir="pattern_images"):
     
     # Process each row
     for idx, row in df.iterrows():
+        data_images = []
         print(f"Processing row {idx + 1}/{len(df)}")
+        
+        # Create entry folder
+        row_id = idx + 1  # Use 1-based indexing for IDs
         
         # Extract and normalize data
         lat_data = row[lat_col] if lat_col else None
         lng_data = row[lng_col] if lng_col else None
         name_data = row[name_col] if name_col else None
         date_data = row[date_col] if date_col else None
+
         
         # Normalize each field to 18 characters
         normalized_lat = normalize_coordinate(lat_data, 'lat')
         normalized_lng = normalize_coordinate(lng_data, 'lng')
         normalized_name = normalize_text(name_data)
         normalized_date = normalize_date(date_data)
+
+        filename = normalized_name
         
-        print(f"  Normalized lat: '{normalized_lat}'")
-        print(f"  Normalized lng: '{normalized_lng}'")
-        print(f"  Normalized name: '{normalized_name}'")
-        print(f"  Normalized date: '{normalized_date}'")
+        # replace space with underscore and remove special characters
+        filename = re.sub(r' ', '_', filename)
+        path = os.path.join(output_dir, f"{re.sub(r'[^A-Za-z0-9_]', '', filename).lower()}.png")
+
+        data = f"{normalized_name};{normalized_date};{normalized_lat};{normalized_lng}"
+
+        max_length = max(max_length, len(data))
         
-        # Generate pattern images
-        try:
-            # Create images for each field
-            lat_img = create_pattern_image(normalized_lat, cell_size=20)
-            lng_img = create_pattern_image(normalized_lng, cell_size=20)
-            name_img = create_pattern_image(normalized_name, cell_size=20)
-            date_img = create_pattern_image(normalized_date, cell_size=20)
+        print(f"  Normalized data: '{data}'")
+        
+        # Define field data
+        fields = {
+            'name': normalized_name,
+            'date': normalized_date,
+            'lat': normalized_lat,
+            'lng': normalized_lng
+        }
+        
+        # Generate image for each character
+        for char_idx, char in enumerate(data):
+            char_img = create_character_image(char, cell_size=20)
+            data_images.append(char_img)
             
-            # Save images with ID-based filenames
-            row_id = idx + 1  # Use 1-based indexing for IDs
-            lat_img.save(os.path.join(output_dir, f"{row_id:03d}-lat.png"))
-            lng_img.save(os.path.join(output_dir, f"{row_id:03d}-lng.png"))
-            name_img.save(os.path.join(output_dir, f"{row_id:03d}-name.png"))
-            date_img.save(os.path.join(output_dir, f"{row_id:03d}-date.png"))
-            
-            print(f"  ✓ Generated images for entry {row_id}")
-            
-        except Exception as e:
-            print(f"  ✗ Error generating images for row {idx}: {e}")
-    
-    print(f"\nProcessing complete! Images saved in '{output_dir}' directory")
+            # Save character image
+            #char_img.save(os.path.join(entry_folder, filename))
+        
+        print(f"  Saved {len(data_images)} character images ")
+        # create image grid        
+        create_image_grid(idx, data_images, cell_size=20, cols=9, img_width=1000).save(path)
+        print(f"  Created grid image for entry {row_id}")
+    return max_length
 
 if __name__ == "__main__":
     # First, create the dictionary image
@@ -360,14 +421,7 @@ if __name__ == "__main__":
     # Then process the CSV file
     csv_file_path = "data.csv"
     
-    # Process the CSV and generate pattern images
-    process_csv_to_patterns(csv_file_path)
-    
-    print("\nPattern generation complete!")
-    print("Files created:")
-    print("- pattern_dictionary.png (1000x1000 reference image)")
-    print("- Pattern images for each CSV entry:")
-    print("  - {id}-lat.png (latitude pattern)")
-    print("  - {id}-lng.png (longitude pattern)")  
-    print("  - {id}-name.png (name pattern)")
-    print("  - {id}-date.png (date pattern)")
+    # Process the CSV and generate individual character pattern images
+    max_length = process_csv_to_individual_characters(csv_file_path)
+
+    print(f"max_length: {max_length}")
