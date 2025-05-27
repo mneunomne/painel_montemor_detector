@@ -1,0 +1,39 @@
+id,name,date,place,lat,lng,maps link,person
+00,Entrincheiramento de Uruçumirim, 20/1/1567,"Rio de Janeiro, Brasil",-22.93989089,-43.16969056,https://maps.app.goo.gl/ptWd8iamVmPhZsm28,Estácio de Sá
+01,Massacre de Miri,29/9/1502,"Kozhikode, Índia",11.16762553,75.80816732,https://maps.app.goo.gl/bDMYxF2kzLohMgMP8,Vasco da Gama
+02,Massacre da Baixa do Cassange,4/1/1961,Angola,-8.856953321,13.37142185,https://maps.app.goo.gl/R7BYs1CHQ82yi8cn9,
+03,Massacre de Mueda,5/13/1905,Moçambique,-11.66495267,39.56385665,https://maps.app.goo.gl/hB8CCc2WNoYF5ERV7,
+04,Massacre do Cais do Pidjiguti,5/12/1905,"Bissau, Guiné-Bissau",11.86014714,-15.57668484,https://maps.app.goo.gl/ERj9GC4twYk2JUDn8,
+05,Massacre de Batepá,5/6/1905,São Tomé e Príncipe,0.3008270046,6.660048949,https://maps.app.goo.gl/CQvEJBJk6Jxa36keA,
+06,Massacre de Wiriamu,16/12/1972,Moçambique,-16.133808,33.60709323,https://maps.app.goo.gl/pT42vxLJRek9bcF88,
+07,Conquista de Malaca,1/71511,"Malaca, Malásia",2.189450429,102.2443152,https://maps.app.goo.gl/Cz9Kt794NNmX9Yuk7,
+08,Conquista de Socotorá,2/15/1904,"Ilha de Socotorá, Iémen",12.66754621,54.06760933,,Tristão da Cunha
+09,Conquista do Reino de Jafanapatão,07/1619,"Jafanapatão, Sri Lanka",9.677489897,80.03588557,https://maps.app.goo.gl/tL3bkoatriJ2CMiB7,
+10,Conquista do Reino de Cota,11/1557,"Seri Jaiavardenapura-Cota, Sri Lanka",6.887743551,79.91876864,https://maps.app.goo.gl/b2xTtipMyv3nAwz78,
+11,Ataques no Norte de Madagáscar,2/14/1904,Norte de Madagáscar,-15.71796469,46.31771706,https://maps.app.goo.gl/7Qpj34wBspRW6rW49,"Tristão da Cunha, Afonso de Albuquerque"
+12,Guerra do Recôncavo,1651,"Interior da Bahia, Brasil",-12.82612548,-38.75335618,https://maps.app.goo.gl/vafbe1qN6RA2BmqbA,
+13,Guerra do Açu,1687,"Pernambuco, RN, Piauí, Paraíba",-5.575814771,-36.91387364,https://maps.app.goo.gl/5tRYZPtD5Bay5T966,
+14,Expedição do Vale do Jaguaribe,9/8/1904,"Vale do Jaguaribe, Cariri",-5.89305686,-38.62209738,"Vale do Jaguaribe, Cariri",
+15,Quilombo dos Palmares,20/11/1695,Quilombo dos Palmares,-9.169824977,-36.08788714,https://maps.app.goo.gl/XAKbF29oZsiwjfWw5,
+16,Cerco no Vale do Rio Doce,12/20/1904,Vale do Rio Doce,-19.40060755,-40.06633231,https://maps.app.goo.gl/3TRTmqZGZ8EQE4HeA,
+17,Batalha de Caiboaté,10/2/1756,"São Gabriel, RS",-30.16597873,-54.34735658,https://maps.app.goo.gl/nZAQYm4vVdCFjGNh7,
+18,Cerco de Damão,4/29/1904,"Damão, Índia",20.40877612,72.83298549,https://maps.app.goo.gl/tfud1kQB6ZwsuCzf9,
+19,Batalha de Bumbi,6/9/1904,Angola,-7.027318247,14.30474834,https://maps.app.goo.gl/ip3Fys1dB12jiJUW7,
+20,Batalha de Zeila,7/1517,"Zeila, Somalilândia",11.3533629,43.47580082,https://maps.app.goo.gl/SWRh5W9Dvx6eNS9v8,Lopo Soares de Albergaria
+21,Batalha de Xael,3/2/1904,Xael,14.7525908,49.60828179,https://maps.app.goo.gl/eUg65HvVbJb56bnG9,
+22,Batalha de Thatta,1557,"Thatta, Paquistão",24.70680334,67.87798362,https://maps.app.goo.gl/Cjz6ycWc16hX71y1A,
+23,Batalha de Mogadíscio,3/21/1904,"Mogadíscio, Somália",2.033374449,45.34362233,https://maps.app.goo.gl/MrFwTXffSJuzkjeP8,
+24,Batalha de Mombaça,2/13/1904,"Mombaça, Quénia",-4.062175537,39.67945905,https://maps.app.goo.gl/dYra993WAVTAkmug8,Francisco de Almeida
+25,Batalha do Cricaré,4/5/1904,"São Mateus, ES",-18.72895045,-39.7751057,https://maps.app.goo.gl/QtD9JEAkjmZWqwq59,Vasco Fernandes Coutinho
+26,Batalha do Jenipapo,13/3/1823,"Campo Maior, Piauí",-4.782503682,-42.11836538,https://maps.app.goo.gl/MmPHr8jMQpSQ3nGA6,João José da Cunha Fidié
+27,Combate de Magul,8/9/1895,"Magul, Moçambique",-25.05855387,33.03171817,https://maps.app.goo.gl/CfsY4ZPJLpVCufGPA,Alfredo Augusto Freire de Andrade
+28,Cerco de Goa,2/25/1904,"Goa, Índia",15.50126154,73.91370488,https://maps.app.goo.gl/kuMCyvKXrZRvaaBLA,
+29,Batalha de Pungo Andongo,1671,"Pungo Andongo, Angola",-9.670851035,15.60875526,https://maps.app.goo.gl/36fc1vaJGbpR59dS7,
+30,Batalha de Guaxenduba,19/11/1614,"Icatu, Maranhão",-2.774961166,-44.06210848,https://maps.app.goo.gl/HrDnaS1B9REfARt3A,
+31,Batalha de Coolela,7/11/1895,"Manjacaze, Gaza, Moçambique",-24.70570376,33.88143932,https://maps.app.goo.gl/guqCreqzR1EqBsuT9,Eduardo Galhardo vs Gungunhana
+32,Combate de Marracuene,2/2/1895,"Marracuene, Moçambique",-25.73865296,32.67320467,https://maps.app.goo.gl/6XWbcxgcGXwAuXVX8,Alfredo Augusto Caldas Xavier vs Príncipe Zixaxa
+33,Combate de Mufilo,27/8/1907,Sudeste de Angola,-17.07489793,15.1256695,"https://www.google.com/maps?ll=-16.8,14.9833&q=-16.8,14.9833&hl=fr&t=m&z=13",Alves Roçadas
+34, Levante Tupinambá,7/1/1619,"Iguape e Guamá, Pará",-1.454229824,-48.50520979,,
+35,Batalha de Ambuíla,29/10/1665,"Ambuíla, Angola",-7.489491287,14.26764626,,
+36,cerco ao “morro do Cailaco”,12/1727,TImor Leste,-8.900307632,125.2833997,,
+37,Revolta da Praia de Sangue,11/24/1904,Forte de São Joaquim do Rio Branco,3.021487197,-60.48158502,https://maps.app.goo.gl/H8wTKkgopMtRTNUV9,
