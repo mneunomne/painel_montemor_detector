@@ -17,14 +17,10 @@ def get_patterns():
         'Ç': [[1,1,1], [1,0,0], [1,1,0]],      # C with cedilla difference
         'D': [[1,1,0], [1,0,1], [1,1,0]],      # D-shape
         'E': [[1,1,1], [1,1,0], [1,1,1]],      # E with middle bar
-        'É': [[0,1,0], [1,1,1], [1,0,0]],      # Distinctive from E
-        'È': [[1,0,0], [1,1,1], [1,0,0]],      # Different accent pattern
-        'Ê': [[0,1,0], [1,1,1], [1,1,1]],      # Hat-like accent
         'F': [[1,1,1], [1,1,0], [1,0,0]],      # F without bottom bar
         'G': [[1,1,1], [1,0,0], [1,0,1]],      # G with inner bar
         'H': [[1,0,1], [1,1,1], [1,0,1]],      # H-shape (kept as good)
         'I': [[1,1,1], [0,1,0], [1,1,1]],      # I with top/bottom bars
-        'Í': [[0,0,1], [0,1,0], [1,1,1]],      # I with accent
         'J': [[0,1,1], [0,0,1], [1,0,1]],      # J hook shape
         'K': [[1,0,1], [1,1,0], [1,0,1]],      # K shape (kept)
         'L': [[1,0,0], [1,0,0], [1,1,1]],      # L shape (kept)
@@ -32,16 +28,13 @@ def get_patterns():
         'N': [[1,1,0], [1,0,1], [0,1,1]],      # N diagonal (kept)
         'O': [[1,1,1], [1,0,1], [1,1,1]],      # O square (kept)
         'Õ': [[0,1,0], [1,0,1], [0,1,0]],      # O with tilde pattern
-        'Ó': [[0,0,1], [1,0,1], [1,1,1]],      # O with accent
-        'Ô': [[0,1,0], [1,0,1], [1,1,1]],      # O with hat
         'P': [[1,1,1], [1,1,0], [1,0,0]],      # P shape (kept)
         'Q': [[1,1,1], [1,0,1], [0,1,1]],      # Q with tail
         'R': [[1,1,0], [1,1,1], [1,0,1]],      # R shape (kept)
         'S': [[0,1,1], [0,1,0], [1,1,0]],      # S curve (kept)
         'T': [[1,1,1], [0,1,0], [0,1,0]],      # T shape (kept)
         'U': [[1,0,1], [1,0,1], [1,1,1]],      # U shape (kept)
-        'Ú': [[0,0,1], [1,0,1], [0,1,0]],      # U with accent
-        'V': [[1,0,1], [1,0,1], [0,1,0]],      # V shape (kept)
+        'V': [[1,0,1], [1,1,1], [0,1,0]],      # V shape (kept)
         'W': [[1,0,1], [1,0,1], [1,1,1]],      # W wide bottom
         'X': [[1,0,1], [0,1,0], [1,0,1]],      # X cross (kept)
         'Y': [[1,0,1], [0,1,0], [0,1,0]],      # Y shape (kept)
@@ -49,7 +42,7 @@ def get_patterns():
         
         # Numbers - made more distinctive
         '0': [[1,1,1], [1,0,1], [1,1,1]],      # Square O (kept)
-        '1': [[0,1,0], [1,1,0], [0,1,0]],      # Vertical line (kept)
+        '1': [[1,1,0], [1,1,0], [0,1,0]],      # Vertical line (kept)
         '2': [[1,1,1], [0,1,1], [1,1,1]],      # 2 shape (kept but was duplicate)
         '3': [[1,1,1], [0,1,1], [0,1,1]],      # Different from 2
         '4': [[1,0,1], [1,1,1], [0,0,1]],      # 4 shape (kept)
@@ -64,8 +57,6 @@ def get_patterns():
         '.': [[0,0,0], [0,0,0], [0,1,0]],      # Period (kept)
         ',': [[0,0,0], [0,0,0], [1,0,0]],      # Comma - different from period
         '-': [[0,0,0], [1,1,1], [0,0,0]],      # Hyphen (kept)
-        '!': [[0,1,0], [0,1,0], [0,1,0]],      # Exclamation
-        '?': [[1,1,1], [0,1,0], [0,1,0]],      # Question mark
         ':': [[0,1,0], [0,0,0], [0,1,0]],      # Colon
         ';': [[0,1,0], [0,0,0], [1,0,0]],      # Semicolon
         '|': [[0,0,0], [0,1,0], [0,0,0]],      # Separator
@@ -343,7 +334,7 @@ class ArucoDetector:
         
         return corners, ids, rejected, result_img
     
-    def load_templates(self, template_folder='character_templates'):
+    def load_templates(self, template_folder='blurred'):
         """Load all template images from the specified folder"""
         templates = {}
         
@@ -384,9 +375,9 @@ class ArucoDetector:
         return max_val, max_loc
     
 
-    def process_grid_with_templates(self, warped_img, templates, grid_rows=9, grid_cols=9, 
-                                  cell_width=39, cell_height=39, gap=30, threshold=0.7, 
-                                  export_cells=True, cell_export_folder='char_blur'):
+    def process_grid_with_templates(self, warped_img, templates, grid_rows=7, grid_cols=7, 
+                                  cell_width=62, cell_height=62, gap=24, threshold=0.7, 
+                                  export_cells=True, cell_export_folder='extracted_cells'):
         """Process the warped image grid and match templates"""
         height, width = warped_img.shape[:2]
         
@@ -394,8 +385,12 @@ class ArucoDetector:
         total_grid_width = (grid_cols * cell_width) + ((grid_cols - 1) * gap)
         total_grid_height = (grid_rows * cell_height) + ((grid_rows - 1) * gap)
         
-        start_x = (width - total_grid_width) // 2
-        start_y = (height - total_grid_height) // 2
+        start_x = 4
+        start_y = 3
+
+        gap = int(((width-start_x) - (grid_rows * cell_width)) / (grid_rows - 1))
+
+       # print(gap)
         
         # Create export folder if needed
         if export_cells:
@@ -424,7 +419,6 @@ class ArucoDetector:
                 cell_x = start_x + col * (cell_width + gap)
                 cell_y = start_y + row * (cell_height + gap)
 
-                
                 # Extract cell region
                 cell_img = warped_img[cell_y:cell_y + cell_height, cell_x:cell_x + cell_width]
                 
@@ -436,7 +430,13 @@ class ArucoDetector:
                 #result_img[cell_y:cell_y + cell_height, cell_x:cell_x + cell_width] = result_cell
 
                 # Resize to 500x500
-                cell_img = cv2.resize(cell_img, (500, 500), interpolation=cv2.INTER_AREA)
+                cell_img = cv2.resize(cell_img, (400, 400), interpolation=cv2.INTER_AREA)
+
+                # save the cell image
+                if export_cells:
+                    cell_filename = os.path.join(cell_export_folder, f"cell_{row}_{col}.png")
+                    cv2.imwrite(cell_filename, cell_img)
+                    print(f"Exported cell image: {cell_filename}")
 
                 # Divide cell into 5x5 grid and apply average gray values
                 h, w = cell_img.shape
@@ -457,8 +457,6 @@ class ArucoDetector:
                         
                         # Extract sub-cell region
                         sub_cell = cell_img[_start_y+10:_end_y-10, _start_x+10:_end_x-10]
-
-                        print(sub_cell.shape)
 
                         
                         # Calculate average gray value
@@ -517,7 +515,7 @@ class ArucoDetector:
 
 def main():
     # Initialize detector
-    detector = ArucoDetector('azulejo5.jpg')
+    detector = ArucoDetector('tijolo7.png')
     
     # Detect markers
     print("Detecting ArUco markers...")
@@ -525,7 +523,7 @@ def main():
 
     # Map marker IDs to positions
     positions = {}
-    id_to_position = {11: 'top-right', 10: 'top-left', 13: 'bottom-right', 12: 'bottom-left'}
+    id_to_position = {24: 'top-left', 25: 'top-right', 26: 'bottom-left', 27: 'bottom-right'}
     corner_mapping = {
         'top-right': 1, 'top-left': 0, 'bottom-right': 2, 'bottom-left': 3
     }
@@ -550,10 +548,10 @@ def main():
         if len(positions) == 4:
             # Apply padding
             padding_config = {
-                'top-left': {'x': -16, 'y': -18},
-                'top-right': {'x': 14, 'y': -18},
-                'bottom-right': {'x': 16, 'y': 20},
-                'bottom-left': {'x': -16, 'y': 20}
+                'top-left': {'x': -8, 'y': -6},
+                'top-right': {'x': 8, 'y': -6},
+                'bottom-right': {'x': 8, 'y': 8},
+                'bottom-left': {'x': -8, 'y': 8}
             }
             
             # Calculate padded corners
