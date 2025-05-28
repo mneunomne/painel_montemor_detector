@@ -376,14 +376,10 @@ class ArucoDetector:
     
 
     def process_grid_with_templates(self, warped_img, templates, grid_rows=7, grid_cols=7, 
-                                  cell_width=62, cell_height=62, gap=24, threshold=0.7, 
-                                  export_cells=True, cell_export_folder='extracted_cells'):
+                                  cell_width=62, cell_height=62, threshold=0.7, 
+                                  data_length=None, export_cells=True, cell_export_folder='exported_cells'):
         """Process the warped image grid and match templates"""
         height, width = warped_img.shape[:2]
-        
-        # Calculate grid parameters
-        total_grid_width = (grid_cols * cell_width) + ((grid_cols - 1) * gap)
-        total_grid_height = (grid_rows * cell_height) + ((grid_rows - 1) * gap)
         
         start_x = 4
         start_y = 3
@@ -413,8 +409,26 @@ class ArucoDetector:
         print("\nTemplate matching results:")
         print("-" * 50)
         
+        index = 0
         for row in range(grid_rows):
             for col in range(grid_cols):
+                if data_length is not None and index >= data_length:
+                    print(f"Reached data length limit: {data_length}")
+                    break
+                index = index + 1
+                if row == 0 and col == 0:
+                    # Skip the top-left corner cell
+                    continue
+                if row == 0 and col == grid_cols - 1:
+                    # Skip the top-right corner cell
+                    continue
+                if row == grid_rows - 1 and col == 0:
+                    # Skip the bottom-left corner cell
+                    continue
+                if row == grid_rows - 1 and col == grid_cols - 1:
+                    # Skip the bottom-right corner cell
+                    continue
+                
                 # Calculate cell position
                 cell_x = start_x + col * (cell_width + gap)
                 cell_y = start_y + row * (cell_height + gap)
@@ -521,6 +535,12 @@ def main():
     print("Detecting ArUco markers...")
     corners, ids, rejected, result = detector.detect_markers()
 
+    # get smallest id
+    smallest_id = None
+    if ids is not None:
+        smallest_id = min(ids.flatten())
+        print(f"Smallest marker ID detected: {smallest_id}")
+
     # Map marker IDs to positions
     positions = {}
     id_to_position = {24: 'top-left', 25: 'top-right', 26: 'bottom-left', 27: 'bottom-right'}
@@ -595,7 +615,7 @@ def main():
             if templates:
                 print("\nProcessing grid with template matching...")
                 grid_results, result_with_matches = detector.process_grid_with_templates(
-                    warped, templates, threshold=0.1
+                    warped, templates, threshold=0.1, data_length=smallest_id,
                 )
                 
                 # Display results
