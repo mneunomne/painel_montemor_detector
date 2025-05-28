@@ -3,7 +3,7 @@ from aruco_detector import ArucoDetector
 
 def main():
     # Initialize detector
-    detector = ArucoDetector('./tests/azulejo7.png')
+    detector = ArucoDetector('app/tests/azulejo7.png')
     
     # Detect markers
     print("Detecting ArUco markers...")

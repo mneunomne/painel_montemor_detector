@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import os
 import glob
-# from character_recognition import recognize_character_from_image, join_characters_to_message
+from character_recognition import recognize_character_from_image, join_characters_to_message
 
 
 class ArucoDetector:
@@ -31,6 +31,7 @@ class ArucoDetector:
         params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
         params.cornerRefinementWinSize = 5
         params.errorCorrectionRate = 0.6
+        params.adaptiveThreshConstant = 0
         return params
     
     def load_image(self):
@@ -61,6 +62,41 @@ class ArucoDetector:
         
         # Apply bilateral filter to reduce noise while preserving edges
         processed = cv2.bilateralFilter(processed, 9, 75, 75)
+        
+        return processed
+    
+    def preprocess_cell_image(self, img, use_red=True, blur_kernel=2, clahe_clip=2.0, 
+                             clahe_tile=8, contrast=1.0, brightness=0):
+        """Preprocess a single cell image for better marker detection"""
+        
+        # Ensure odd kernel size
+        if blur_kernel % 2 == 0:
+            blur_kernel += 1
+        if blur_kernel < 1:
+            blur_kernel = 1
+        
+        # Ensure tile size is positive
+        if clahe_tile < 1:
+            clahe_tile = 1
+        
+        # Extract channel
+        if use_red and len(img.shape) == 3:
+            processed = img[:, :, 2]  # Red channel (BGR format)
+        else:
+            processed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if len(img.shape) == 3 else img
+        
+        # Apply contrast and brightness
+        if contrast != 1.0 or brightness != 0:
+            processed = cv2.convertScaleAbs(processed, alpha=contrast, beta=brightness)
+        
+        # Apply Gaussian blur
+        if blur_kernel > 1:
+            processed = cv2.GaussianBlur(processed, (blur_kernel, blur_kernel), 0)
+        
+        # Apply CLAHE (local contrast enhancement)
+        if clahe_clip > 0:
+            clahe = cv2.createCLAHE(clipLimit=clahe_clip, tileGridSize=(clahe_tile, clahe_tile))
+            processed = clahe.apply(processed)
         
         return processed
     
@@ -131,7 +167,7 @@ class ArucoDetector:
         matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
         return matrix, (width, height)
     
-    def load_templates(self, template_folder='character_templates'):
+    def load_templates(self, template_folder='app/character_templates'):
         """Load character templates from folder"""
         templates = {}
         
@@ -188,6 +224,15 @@ class ArucoDetector:
                 cell_y = start_y + row * (cell_height + gap)
                 cell_img = warped_img[cell_y:cell_y + cell_height, cell_x:cell_x + cell_width]
                 
+                # preprocess cell image
+                cell_img = self.preprocess_cell_image(cell_img, use_red=True, blur_kernel=3, 
+                                                      clahe_clip=2.0, clahe_tile=2, contrast=1.0, brightness=0)
+                result_cell = cell_img.copy()
+                # convert to color for visualization
+                result_cell = cv2.cvtColor(result_cell, cv2.COLOR_GRAY2BGR)
+
+                result_img[cell_y:cell_y + cell_height, cell_x:cell_x + cell_width] = result_cell
+
                 # Export cell if requested
                 if export_cells:
                     cell_filename = os.path.join(export_folder, f"cell_{row}_{col}.png")
