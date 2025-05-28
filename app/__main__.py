@@ -1,5 +1,7 @@
 import cv2
 from aruco_detector import ArucoDetector
+from web_search import WebSearch
+
 
 def main():
     # Initialize detector
@@ -28,6 +30,9 @@ def main():
             
             # Display results
             print(f"\nFinal decoded message: '{message}'")
+
+            searcher = WebSearch()
+            searcher.search(message)
             
             cv2.imshow("Original with Markers", result_img)
             cv2.imshow("Warped Perspective", warped)
