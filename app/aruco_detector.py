@@ -2,13 +2,15 @@
 Refactored ArUco detector for character recognition on clay surfaces
 with frame accumulation for better marker detection
 """
-
+import time
 import cv2
 import numpy as np
 import os
 import glob
 from character_recognition import recognize_character_from_image, join_characters_to_message
-
+# random
+from random import randint as rand
+#from cv2 import delay, imshow, waitKey, destroyAllWindows
 
 class ArucoDetector:
     def __init__(self, image_path='image.jpg'):
@@ -207,7 +209,7 @@ class ArucoDetector:
         
         return corners, ids, processed
     
-    def filter_markers_by_size(self, corners, ids, min_side_length=None, max_side_length=None):
+    def filter_markers_by_area(self, corners, ids, min_area=500, max_area=5000):
         if ids is None or len(ids) == 0:
             return corners, ids
         
@@ -215,26 +217,18 @@ class ArucoDetector:
         filtered_ids = []
         
         for i, corner_set in enumerate(corners):
-            corner_points = corner_set[0]
-            
-            # Calculate average side length
-            side_lengths = []
-            for j in range(4):
-                p1 = corner_points[j]
-                p2 = corner_points[(j + 1) % 4]
-                side_length = np.linalg.norm(p2 - p1)
-                side_lengths.append(side_length)
-            
-            avg_side_length = np.mean(side_lengths)
+            # Calculate area using the Shoelace formula
+            corner_points = corner_set[0]  # Get the 4 corner points
+            area = cv2.contourArea(corner_points)
 
-            print(f"Marker {ids[i][0]}: Average side length = {avg_side_length:.2f}")
+            print(f"Marker ID: {ids[i][0]}, Area: {area:.2f}")
             
             # Apply filters
-            if min_side_length is not None and avg_side_length < min_side_length:
+            if min_area is not None and area < min_area:
                 continue
-            if max_side_length is not None and avg_side_length > max_side_length:
-                continue 
-
+            if max_area is not None and area > max_area:
+                continue
+                
             filtered_corners.append(corner_set)
             filtered_ids.append(ids[i])
         
@@ -460,6 +454,17 @@ class ArucoDetector:
                 # preprocess cell image
                 cell_img = self.preprocess_cell_image(cell_img, use_red=True, blur_kernel=3, 
                                                       clahe_clip=2.0, clahe_tile=2, contrast=1.0, brightness=0)
+                
+                # create cv2 display window
+                # cv2.namedWindow(f"Cell ({row},{col})", cv2.WINDOW_NORMAL)
+                # pisition the randomly
+                # cv2.setWindowProperty(f"Cell ({row},{col})", cv2.WND_PROP_TOPMOST, 1)
+                # cv2.moveWindow(f"Cell ({row},{col})", rand(0, 1920), rand(0, 800))
+                # Show cell image 
+                # cv2.imshow(f"Cell ({row},{col})", cell_img)
+                #delay(0.1)  # Allow time to view
+                
+                
                 result_cell = cell_img.copy()
                 # convert to color for visualization
                 result_cell = cv2.cvtColor(result_cell, cv2.COLOR_GRAY2BGR)
