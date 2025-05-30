@@ -15,6 +15,26 @@ def main():
     
     if corners is not None and ids is not None:
         # draw src_pts on the result image with polyline
+
+        if corners is not None:
+            for corner, index in zip(corners, range(len(corners))):
+                size = cv2.contourArea(corner[0])
+                id = ids[index][0] if ids is not None else -1
+
+        print(f"ids: {ids}")
+        print(f"corners: {corners}")
+
+        # filter conrers and ids that have size < 600
+       #  corners = [[corner for corner in corners if cv2.contourArea(corner[0]) >= 600]]
+
+        filtered_corners, filtered_ids = detector.filter_markers_by_size(
+            corners, ids, min_side_length=20, max_side_length=50
+        )
+
+        ids = filtered_ids
+        corners = filtered_corners
+
+
         
         cv2.imshow("Original with Accumulated Markers", result_img)
         

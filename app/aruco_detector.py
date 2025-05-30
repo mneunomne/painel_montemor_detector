@@ -207,6 +207,39 @@ class ArucoDetector:
         
         return corners, ids, processed
     
+    def filter_markers_by_size(self, corners, ids, min_side_length=None, max_side_length=None):
+        if ids is None or len(ids) == 0:
+            return corners, ids
+        
+        filtered_corners = []
+        filtered_ids = []
+        
+        for i, corner_set in enumerate(corners):
+            corner_points = corner_set[0]
+            
+            # Calculate average side length
+            side_lengths = []
+            for j in range(4):
+                p1 = corner_points[j]
+                p2 = corner_points[(j + 1) % 4]
+                side_length = np.linalg.norm(p2 - p1)
+                side_lengths.append(side_length)
+            
+            avg_side_length = np.mean(side_lengths)
+
+            print(f"Marker {ids[i][0]}: Average side length = {avg_side_length:.2f}")
+            
+            # Apply filters
+            if min_side_length is not None and avg_side_length < min_side_length:
+                continue
+            if max_side_length is not None and avg_side_length > max_side_length:
+                continue 
+
+            filtered_corners.append(corner_set)
+            filtered_ids.append(ids[i])
+        
+        return filtered_corners, np.array(filtered_ids) if filtered_ids else None
+
     def detect_markers_with_accumulation(self, max_attempts=100):
         """
         Detect ArUco markers over multiple frames, accumulating detections
