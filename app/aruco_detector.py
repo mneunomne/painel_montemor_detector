@@ -1,5 +1,6 @@
 """
 Refactored ArUco detector for character recognition on clay surfaces
+with frame accumulation for better marker detection
 """
 
 import cv2
@@ -16,23 +17,79 @@ class ArucoDetector:
         self.original_image = None
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         self.detection_params = self._get_detection_parameters()
-        self.load_image()
-    
+        
+        # if path is an URL, read from camera stream
+        if self.image_path.startswith('http://') or self.image_path.startswith('https://'):
+            # Don't read immediately for URLs - we'll read multiple frames later
+            self.is_stream = True
+        else:
+            self.is_stream = False
+            self.load_image()
+            
     def _get_detection_parameters(self):
         """Get optimized ArUco detection parameters"""
         params = cv2.aruco.DetectorParameters()
-        params.adaptiveThreshWinSizeMin = 3
-        params.adaptiveThreshWinSizeMax = 40
-        params.adaptiveThreshWinSizeStep = 10
-        params.minMarkerPerimeterRate = 0.03
+        params.adaptiveThreshConstant = 7
+        params.adaptiveThreshWinSizeMin = 4
+        params.adaptiveThreshWinSizeMax = 20
+        params.adaptiveThreshWinSizeStep = 8
+        
+        # Contour filtering parameters
+        params.minMarkerPerimeterRate = 0.1  # Lower for small markers
         params.maxMarkerPerimeterRate = 4.0
-        params.polygonalApproxAccuracyRate = 0.03
+        params.polygonalApproxAccuracyRate = 0.05  # More lenient for engraved markers
         params.minCornerDistanceRate = 0.05
+        params.minMarkerDistanceRate = 0.02
+        params.minDistanceToBorder = 1
+        
+        # Bits extraction parameters - crucial for engraved markers
+        params.markerBorderBits = 1
+        params.minOtsuStdDev = 3.0  # Lower threshold for uniform surfaces
+        params.perspectiveRemovePixelPerCell = 16  # Higher for better bit extraction
+        params.perspectiveRemoveIgnoredMarginPerCell = 0.1
+        
+        # Marker identification parameters - more lenient for damaged engravings
+        params.maxErroneousBitsInBorderRate = 1.5  # Allow more border errors
+        params.errorCorrectionRate = 1.2  # More aggressive error correction
+        
+        # Corner refinement parameters - essential for precise detection
         params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
-        params.cornerRefinementWinSize = 5
-        params.errorCorrectionRate = 0.6
-        params.adaptiveThreshConstant = 0
+        params.cornerRefinementWinSize = 10
+        params.relativeCornerRefinmentWinSize = 0.3
+        params.cornerRefinementMaxIterations = 50
+        params.cornerRefinementMinAccuracy = 0.05
+        #params.adaptiveThreshWinSizeMin = 3
+        #params.adaptiveThreshWinSizeMax = 40
+        #params.adaptiveThreshWinSizeStep = 10
+        #params.minMarkerPerimeterRate = 0.06
+        #params.maxMarkerPerimeterRate = 4.0
+        #params.polygonalApproxAccuracyRate = 0.03
+        #params.minCornerDistanceRate = 0.1
+        #params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+        #params.cornerRefinementWinSize = 5
+        #params.errorCorrectionRate = 0.6
+        #params.adaptiveThreshConstant = 0
+         
+        # params.adaptiveThreshConstant = 0
+        # params.minMarkerPerimeterRate = 0.05
+        # params.maxMarkerPerimeterRate = 4.0
+        # params.polygonalApproxAccuracyRate = 0.03
+        # params.minCornerDistanceRate = 0.10
+        # params.minDistanceToBorder = 3
+        #params.minMarkerDistanceRate = 0.05
+        #params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
         return params
+    
+    def read_from_camera_stream(self, url):
+        cap = cv2.VideoCapture(url)
+        ret, frame = cap.read()
+        cap.release()
+        if ret:
+            # rotate image 180
+            frame = cv2.rotate(frame, cv2.ROTATE_180)
+            return frame
+        else:
+            return None
     
     def load_image(self):
         """Load and resize image if needed"""
@@ -51,17 +108,43 @@ class ArucoDetector:
         
         return True
     
-    def preprocess_image(self, img):
+    def preprocess_image(self, frame):
         """Preprocess image for better detection"""
         # Use red channel for clay surfaces
-        processed = img[:, :, 2]  # Red channel (BGR format)
-        
+        #processed = img[:, :, 2]  # Red channel (BGR format)
+        #processed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if len(img.shape) == 3 else img
+
+        # Apply slight Gaussian blur to reduce noise
+        #processed = cv2.GaussianBlur(processed, (3, 3), 0)
+
         # Apply CLAHE for local contrast enhancement
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        processed = clahe.apply(processed)
+       # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+        #processed = clahe.apply(processed)
+
+        #processed = cv2.convertScaleAbs(processed, alpha=1.2, beta=1.0)
         
         # Apply bilateral filter to reduce noise while preserving edges
-        processed = cv2.bilateralFilter(processed, 9, 75, 75)
+        # processed = cv2.bilateralFilter(processed, 9, 75, 75)
+
+        """Enhanced preprocessing for red ceramic surfaces"""
+        # Convert to different color spaces for better contrast
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+
+        # only use the red channel
+        red_channel = frame[:, :, 2]
+        
+        # Use L channel from LAB for better luminance separation
+        gray = red_channel
+        
+        # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        gray = clahe.apply(gray)
+        
+        # Apply slight Gaussian blur to reduce noise
+        gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        
+        return gray
         
         return processed
     
@@ -108,30 +191,147 @@ class ArucoDetector:
         
         # Preprocess and detect
         processed = self.preprocess_image(self.original_image)
-        processed_bgr = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
+        #processed_bgr = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
         
         corners, ids, rejected = cv2.aruco.detectMarkers(
-            processed_bgr, self.aruco_dict, parameters=self.detection_params
+            processed, self.aruco_dict, parameters=self.detection_params
         )
         
         # Create result visualization
         result_img = self.original_image.copy()
         if ids is not None:
-            cv2.aruco.drawDetectedMarkers(result_img, corners, ids)
+            cv2.aruco.drawDetectedMarkers(processed, corners, ids)
             print(f"Detected {len(ids)} markers: {ids.flatten()}")
         else:
             print("No markers detected")
         
-        return corners, ids, result_img
+        return corners, ids, processed
     
-    def get_perspective_transform(self, corners, ids):
+    def detect_markers_with_accumulation(self, max_attempts=100):
+        """
+        Detect ArUco markers over multiple frames, accumulating detections
+        until all required markers are found or max attempts reached.
+        """
+        if not self.is_stream:
+            # For static images, just do normal detection
+            return self.detect_markers()
+        
+        # Initialize accumulator for marker detections
+        accumulated_markers = {}  # {marker_id: {'corners': corners, 'count': count}}
+        best_frame = None
+        attempt = 0
+        
+        # Open video stream
+        cap = cv2.VideoCapture(self.image_path)
+
+        if not cap.isOpened():
+            print(f"Could not open video stream: {self.image_path}")
+            return None, None, None
+        
+        print(f"Attempting to detect markers over {max_attempts} frames...")
+        
+        while attempt < max_attempts:
+            ret, frame = cap.read()
+            frame = cv2.rotate(frame, cv2.ROTATE_180)
+            if not ret:
+                print(f"Failed to read frame at attempt {attempt}")
+                attempt += 1
+                continue
+            
+            # Resize if too large
+            height, width = frame.shape[:2]
+            if width > 1200 or height > 900:
+                scale = min(800/width, 600/height)
+                new_width = int(width * scale)
+                new_height = int(height * scale)
+                frame = cv2.resize(frame, (new_width, new_height))
+            
+            # Store the latest frame
+            self.original_image = frame
+            best_frame = frame.copy()
+            
+            # Preprocess and detect
+            processed = self.preprocess_image(frame)
+            processed_bgr = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
+            
+            corners, ids, rejected = cv2.aruco.detectMarkers(
+                processed_bgr, self.aruco_dict, parameters=self.detection_params
+            )
+            
+            # Accumulate detections
+            if ids is not None:
+                for i, marker_id in enumerate(ids):
+                    marker_id_val = int(marker_id[0])
+                    
+                    if marker_id_val not in accumulated_markers:
+                        accumulated_markers[marker_id_val] = {
+                            'corners': corners[i],
+                            'count': 1,
+                            'last_seen': attempt
+                        }
+                        print(f"Frame {attempt}: Found new marker {marker_id_val}")
+                    else:
+                        # Update with latest detection
+                        accumulated_markers[marker_id_val]['corners'] = corners[i]
+                        accumulated_markers[marker_id_val]['count'] += 1
+                        accumulated_markers[marker_id_val]['last_seen'] = attempt
+            
+            # Check if we have 4 distinct markers
+            num_found_markers = len(accumulated_markers)
+            
+            if num_found_markers >= 4:
+                print(f"Found 4 distinct markers after {attempt + 1} attempts!")
+                break
+            
+            # Show progress every 10 frames
+            if attempt % 10 == 0:
+                found_marker_ids = sorted(accumulated_markers.keys())
+                print(f"Attempt {attempt}: Found {num_found_markers}/4 markers. IDs: {found_marker_ids}")
+            
+            attempt += 1
+        
+        cap.release()
+        
+        # Prepare final results
+        if len(accumulated_markers) == 0:
+            print("No markers detected after all attempts!")
+            return None, None, None
+        
+        # Convert accumulated markers to standard format
+        final_corners = []
+        final_ids = []
+        
+        for marker_id, data in accumulated_markers.items():
+            final_corners.append(data['corners'])
+            final_ids.append([marker_id])
+        
+        final_ids = np.array(final_ids)
+        
+        # Create result visualization
+        result_img = best_frame.copy() if best_frame is not None else self.original_image.copy()
+        cv2.aruco.drawDetectedMarkers(processed_bgr, final_corners, final_ids)
+        
+        print(f"\nFinal detection summary:")
+        print(f"Total attempts: {attempt}")
+        print(f"Markers found: {sorted(accumulated_markers.keys())}")
+        for marker_id, data in accumulated_markers.items():
+            print(f"  Marker {marker_id}: seen {data['count']} times, last at frame {data['last_seen']}")
+        
+        return final_corners, final_ids, processed_bgr
+    
+    def get_perspective_transform(self, corners, ids, smallest_id):
         """Get perspective transformation matrix from detected markers"""
         if ids is None or len(ids) < 4:
             print("Not enough markers for perspective transform")
             return None, None
         
+        id_to_position = {}
+        id_to_position[smallest_id] = 'top-left'
+        id_to_position[smallest_id + 1] = 'top-right'
+        id_to_position[smallest_id + 2] = 'bottom-left'
+        id_to_position[smallest_id + 3] = 'bottom-right'
+        
         # Map marker IDs to positions
-        id_to_position = {24: 'top-left', 25: 'top-right', 26: 'bottom-left', 27: 'bottom-right'}
         corner_mapping = {'top-right': 1, 'top-left': 0, 'bottom-right': 2, 'bottom-left': 3}
         
         positions = {}
@@ -150,8 +350,8 @@ class ArucoDetector:
             return None, None
         
         # Apply padding and create transformation
-        padding = {'top-left': (-8, -6), 'top-right': (8, -6), 
-                  'bottom-right': (8, 8), 'bottom-left': (-8, 8)}
+        padding = {'top-left': (-5, -4), 'top-right': (5, -4), 
+                  'bottom-right': (5,5), 'bottom-left': (-5, 5)}
         
         src_pts = []
         for corner in ['top-left', 'top-right', 'bottom-right', 'bottom-left']:
@@ -165,9 +365,9 @@ class ArucoDetector:
         dst_pts = np.array([[0, 0], [width, 0], [width, height], [0, height]], dtype=np.float32)
         
         matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
-        return matrix, (width, height)
+        return matrix, (width, height), src_pts
     
-    def load_templates(self, template_folder='app/character_templates'):
+    def load_templates(self, template_folder='app/blurred'):
         """Load character templates from folder"""
         templates = {}
         
@@ -239,7 +439,7 @@ class ArucoDetector:
                     cv2.imwrite(cell_filename, cell_img)
                 
                 # Recognize character
-                character, confidence = recognize_character_from_image(cell_img, templates)
+                character, confidence = recognize_character_from_image(cell_img, row, col, templates)
                 
                 if character and character != '?':
                     grid_results[row][col] = {

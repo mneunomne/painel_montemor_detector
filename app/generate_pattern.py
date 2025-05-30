@@ -53,8 +53,10 @@ def get_patterns():
     return {
     # Basic Latin letters - improved for better recognition
     'A': [[0,1,0], [1,1,1], [1,0,1]],      # Classic A shape with peak
+    'Ã': [[1,1,1], [1,1,1], [1,0,1]],      # Classic A shape with peak
     'B': [[1,1,0], [1,1,1], [1,1,0]],      # B with two bumps (kept good)
     'C': [[0,1,1], [1,0,0], [0,1,1]],      # C opening to right
+    'Ç': [[1,1,0], [1,0,0], [0,1,1]],      # C opening to right
     'D': [[1,1,0], [1,0,1], [1,1,0]],      # D shape (kept good)
     'E': [[1,1,1], [1,1,0], [1,1,1]],      # E with horizontal lines (kept)
     'F': [[1,1,1], [1,1,0], [1,0,0]],      # F without bottom (kept)
@@ -469,7 +471,7 @@ if __name__ == "__main__":
     create_dictionary_image("pattern_dictionary.png", 1000)
     create_char_templates("character_templates", cell_size=100)
     # Then process the CSV file
-    csv_file_path = "data.csv"
+    csv_file_path = "app/data.csv"
     
     # Process the CSV and generate individual character pattern images
     max_length = process_csv_to_individual_characters(csv_file_path)

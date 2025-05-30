@@ -1,35 +1,35 @@
 id,tile,name,date,place,lat,lng,maps link,person
-00,05_10,Entrincheiramento de Uruçumirim,1567,"Rio de Janeiro, Brasil",-22.93989089,-43.16969056,https://maps.app.goo.gl/ptWd8iamVmPhZsm28,Estácio de Sá
-01,05_14,Guerra do Açu,1687,"Pernambuco, RN, Piauí, Paraíba",-5.575814771,-36.91387364,https://maps.app.goo.gl/5tRYZPtD5Bay5T966,
+00,05_10,Entrincheiramento de Uruçumirim,1567,"Rio de Janeiro, Brasil",-22.93989089,-43.16969056,https://maps.app.goo.gl/ptWd8iamVmPhZsm28,Estacio de Sa
+01,05_14,Guerra do Açu,1687,"Pernambuco, RN, Piaui, Paraiba",-5.575814771,-36.91387364,https://maps.app.goo.gl/5tRYZPtD5Bay5T966,
 02,06_07,Massacre de Mueda,1960,Moçambique,-11.66495267,39.56385665,https://maps.app.goo.gl/hB8CCc2WNoYF5ERV7,
-03,06_09,Massacre do Cais do Pidjiguti,1959,"Bissau, Guiné-Bissau",11.86014714,-15.57668484,https://maps.app.goo.gl/ERj9GC4twYk2JUDn8,
-04,06_11,Massacre de Batepá,1953,São Tomé e Príncipe,0.3008270046,6.660048949,https://maps.app.goo.gl/CQvEJBJk6Jxa36keA,
+03,06_09,Massacre do Cais do Pidjiguti,1959,"Bissau, Guine-Bissau",11.86014714,-15.57668484,https://maps.app.goo.gl/ERj9GC4twYk2JUDn8,
+04,06_11,Massacre de Batepa,1953,São Tome e Principe,0.3008270046,6.660048949,https://maps.app.goo.gl/CQvEJBJk6Jxa36keA,
 05,06_13,Massacre de Wiriamu,1972,Moçambique,-16.133808,33.60709323,https://maps.app.goo.gl/pT42vxLJRek9bcF88,
-06,06_15,Conquista de Malaca,1511,"Malaca, Malásia",2.189450429,102.2443152,https://maps.app.goo.gl/Cz9Kt794NNmX9Yuk7,
-07,06_18,Conquista de Socotorá,1673,"Ilha de Socotorá, Iémen",12.66754621,54.06760933,,Tristão da Cunha
+06,06_15,Conquista de Malaca,1511,"Malaca, Malasia",2.189450429,102.2443152,https://maps.app.goo.gl/Cz9Kt794NNmX9Yuk7,
+07,06_18,Conquista de Socotora,1673,"Ilha de Socotora, Iemen",12.66754621,54.06760933,,Tristão da Cunha
 08,07_05,Revolta da Praia de Sangue,1790,Forte de São Joaquim do Rio Branco,3.021487197,-60.48158502,https://maps.app.goo.gl/H8wTKkgopMtRTNUV9,
 09,10_18,Conquista do Reino de Cota,1557,"Seri Jaiavardenapura-Cota, Sri Lanka",6.887743551,79.91876864,https://maps.app.goo.gl/b2xTtipMyv3nAwz78,
-10,07_14,Massacre de Miri,1502,"Kozhikode, Índia",11.16762553,75.80816732,https://maps.app.goo.gl/bDMYxF2kzLohMgMP8,Vasco da Gama
+10,07_14,Massacre de Miri,1502,"Kozhikode, india",11.16762553,75.80816732,https://maps.app.goo.gl/bDMYxF2kzLohMgMP8,Vasco da Gama
 11,07_16,Conquista do Reino de Jafanapatão,1619,"Jafanapatão, Sri Lanka",9.677489897,80.03588557,https://maps.app.goo.gl/tL3bkoatriJ2CMiB7,
 12,07_17,Destruição do Quilombo dos Palmares,1694,Quilombo dos Palmares,-9.169824977,-36.08788714,https://maps.app.goo.gl/XAKbF29oZsiwjfWw5,
-13,07_19,Batalha de Caiboaté,1756,"São Gabriel, RS",-30.16597873,-54.34735658,https://maps.app.goo.gl/nZAQYm4vVdCFjGNh7,
-14,08_07,Batalha de Ambuíla,1665,"Ambuíla, Angola",-7.489491287,14.26764626,,
+13,07_19,Batalha de Caiboate,1756,"São Gabriel, RS",-30.16597873,-54.34735658,https://maps.app.goo.gl/nZAQYm4vVdCFjGNh7,
+14,08_07,Batalha de Ambuila,1665,"Ambuila, Angola",-7.489491287,14.26764626,,
 15,08_09,Batalha de Bumbi,1904,Angola,-7.027318247,14.30474834,https://maps.app.goo.gl/ip3Fys1dB12jiJUW7,
-16,08_11,Batalha de Zeila,1517,"Zeila, Somalilândia",11.3533629,43.47580082,https://maps.app.goo.gl/SWRh5W9Dvx6eNS9v8,Lopo Soares de Albergaria
+16,08_11,Batalha de Zeila,1517,"Zeila, Somalilandia",11.3533629,43.47580082,https://maps.app.goo.gl/SWRh5W9Dvx6eNS9v8,Lopo Soares de Albergaria
 17,08_15,Batalha de Thatta,1557,"Thatta, Paquistão",24.70680334,67.87798362,https://maps.app.goo.gl/Cjz6ycWc16hX71y1A,
-18,08_18,Batalha de Mogadíscio,1542,"Mogadíscio, Somália",2.033374449,45.34362233,https://maps.app.goo.gl/MrFwTXffSJuzkjeP8,
-19,09_07,Batalha de Mombaça,1904,"Mombaça, Quénia",-4.062175537,39.67945905,https://maps.app.goo.gl/dYra993WAVTAkmug8,Francisco de Almeida
-20,09_09,Batalha do Cricaré,1904,"São Mateus, ES",-18.72895045,-39.7751057,https://maps.app.goo.gl/QtD9JEAkjmZWqwq59,Vasco Fernandes Coutinho
-21,09_12,Batalha do Jenipapo,1823,"Campo Maior, Piauí",-4.782503682,-42.11836538,https://maps.app.goo.gl/MmPHr8jMQpSQ3nGA6,João José da Cunha Fidié
+18,08_18,Batalha de Mogadiscio,1542,"Mogadiscio, Somalia",2.033374449,45.34362233,https://maps.app.goo.gl/MrFwTXffSJuzkjeP8,
+19,09_07,Batalha de Mombaça,1904,"Mombaça, Quenia",-4.062175537,39.67945905,https://maps.app.goo.gl/dYra993WAVTAkmug8,Francisco de Almeida
+20,09_09,Batalha do Cricare,1904,"São Mateus, ES",-18.72895045,-39.7751057,https://maps.app.goo.gl/QtD9JEAkjmZWqwq59,Vasco Fernandes Coutinho
+21,09_12,Batalha do Jenipapo,1823,"Campo Maior, Piaui",-4.782503682,-42.11836538,https://maps.app.goo.gl/MmPHr8jMQpSQ3nGA6,João Jose da Cunha Fidie
 22,09_16,Combate de Magul,1895,"Magul, Moçambique",-25.05855387,33.03171817,https://maps.app.goo.gl/CfsY4ZPJLpVCufGPA,Alfredo Augusto Freire de Andrade
-23,09_17,Cerco de Goa,1517,"Goa, Índia",15.50126154,73.91370488,https://maps.app.goo.gl/kuMCyvKXrZRvaaBLA,
+23,09_17,Cerco de Goa,1517,"Goa, india",15.50126154,73.91370488,https://maps.app.goo.gl/kuMCyvKXrZRvaaBLA,
 24,08_13,Batalha de Pungo Andongo,1671,"Pungo Andongo, Angola",-9.670851035,15.60875526,https://maps.app.goo.gl/36fc1vaJGbpR59dS7,
 25,09_19,cerco ao morro do Cailaco,1727,TImor Leste,-8.900307632,125.2833997,,
 26,10_06,Batalha de Guaxenduba,1614,"Icatu, Maranhão",-2.774961166,-44.06210848,https://maps.app.goo.gl/HrDnaS1B9REfARt3A,
 27,10_08,Batalha de Coolela,1895,"Manjacaze, Gaza, Moçambique",-24.70570376,33.88143932,https://maps.app.goo.gl/guqCreqzR1EqBsuT9,Eduardo Galhardo vs Gungunhana
-28,10_11,Combate de Marracuene,1895,"Marracuene, Moçambique",-25.73865296,32.67320467,https://maps.app.goo.gl/6XWbcxgcGXwAuXVX8,Alfredo Augusto Caldas Xavier vs Príncipe Zixaxa
+28,10_11,Combate de Marracuene,1895,"Marracuene, Moçambique",-25.73865296,32.67320467,https://maps.app.goo.gl/6XWbcxgcGXwAuXVX8,Alfredo Augusto Caldas Xavier vs Principe Zixaxa
 29,10_13,Combate de Mufilo,1907,Sudeste de Angola,-17.07489793,15.1256695,"https://www.google.com/maps?ll=-16.8,14.9833&q=-16.8,14.9833&hl=fr&t=m&z=13",Alves Roçadas
-30,07_06,Levante Tupinambá,1619,"Iguape e Guamá, Pará",-1.454229824,-48.50520979,,
-31,11_07,Cerco de Damão,1581,"Damão, Índia",20.40877612,72.83298549,https://maps.app.goo.gl/tfud1kQB6ZwsuCzf9,
+30,07_06,Levante Tupinamba,1619,"Iguape e Guama, Para",-1.454229824,-48.50520979,,
+31,11_07,Cerco de Damão,1581,"Damão, india",20.40877612,72.83298549,https://maps.app.goo.gl/tfud1kQB6ZwsuCzf9,
 32,11_09,Massacre da Baixa do Cassange,1961,Angola,-8.856953321,13.37142185,https://maps.app.goo.gl/R7BYs1CHQ82yi8cn9,
 33,11_10,Batalha de Xael,1548,Xael,14.7525908,49.60828179,https://maps.app.goo.gl/eUg65HvVbJb56bnG9,

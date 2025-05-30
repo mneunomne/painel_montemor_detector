@@ -6,16 +6,17 @@ import cv2
 import numpy as np
 from patterns import get_patterns
 
-def is_mostly_white(img, threshold=0.8):
+def is_mostly_white(img, row, col, threshold=0.95):
     """Check if image is mostly white/empty"""
     if len(img.shape) == 3:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
         gray = img
     
-    white_pixels = np.sum(gray > 200)
+    white_pixels = np.sum(gray > 85)
     total_pixels = gray.shape[0] * gray.shape[1]
     white_ratio = white_pixels / total_pixels
+    print(f"Row {row}, Col {col}: White ratio = {white_ratio}")
     
     return white_ratio > threshold
 
@@ -61,13 +62,13 @@ def compare_patterns(pattern1, pattern2):
     return matches / 9
 
 
-def recognize_character_from_image(cell_img, templates=None, use_patterns=True, threshold=0.7):
+def recognize_character_from_image(cell_img, row, col, templates=None, use_patterns=True, threshold=0.7):
     """
     Recognize character from cell image using templates or patterns
     Returns character and confidence score
     """
     # Check if mostly white first
-    if is_mostly_white(cell_img):
+    if is_mostly_white(cell_img, row, col):
         return ' ', 1.0
     
     # Preprocess cell
