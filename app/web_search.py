@@ -59,7 +59,7 @@ class WebSearch:
 
             # Define your custom CSS
             custom_css = """
-            .header__logo, [data-testid="serp-popover-promo"], #react-duckbar, [data-testid="privacy-reminder"], [data-testid="feedback-prompt"] {
+            .header__logo, [data-testid="serp-popover-promo"], #react-duckbar, [data-testid="privacy-reminder"], [data-testid="feedback-prompt"], .footer {
                 display: none !important;
             }
             """
@@ -133,6 +133,8 @@ class WebSearch:
                         f.write(span_text + "\n")
                     
                     time.sleep(0.2)  # 200ms delay between each write
+
+                    
             
 
             

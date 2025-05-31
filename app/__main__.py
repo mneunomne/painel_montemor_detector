@@ -195,6 +195,7 @@ def run_aruco_detection():
                 year = year.replace('O', '0')
                 year = year.replace('|', ' ')
                 year = year.replace('Ç', '5')
+                year = year.replace('B', '8')
                 name = name.replace('1', 'T')
                 name = name.replace('7', 'M')
 
