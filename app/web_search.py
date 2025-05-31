@@ -78,31 +78,61 @@ class WebSearch:
                 if (elements[index]) {{
                     //elements[index].style.textDecoration = 'underline';
                     //elements[index].style.color = 'blue';  // Optional: change color to blue
-                    elements[index].style.border = 'solid 1px red';  // Optional: change color to blue
+                    //elements[index].style.border = 'solid 1px red';  // Optional: change color to blue
                 }}
                 index++;
             }}, 50);
             """
             self.driver.execute_script(script)
-            
-            # Find and use search box
-            wait = WebDriverWait(self.driver, 10000)
-            
-            # slowly scroll down the page
-            # Scroll in small steps
-            scroll_pause = 0.01  # seconds between scrolls
-            scroll_step = 2   # pixels per step
-            total_height = self.driver.execute_script("return document.body.scrollHeight")
-            time.sleep(5)
-            for y in range(0, total_height, scroll_step):
-                self.driver.execute_script(f"setInterval(window.scrollTo(0, {y}));")
-                # get random span element and add "text-decoration: underline;" to it 
-                time.sleep(scroll_pause)
-            # scroll back up
-            self.driver.execute_script("window.scrollTo(0, 0);")
 
-            print("✅ Search complete! Browser window is open for you to view results")
-            print("🌐 Close the browser window when you're done")
+            # Get all span texts in one JavaScript call
+            span_texts = self.driver.execute_script("""
+                return Array.from(document.querySelectorAll('[data-area="mainline"] span')).map((el, index) => 
+                    `${el.textContent.trim()}`
+                );
+            """)
+
+            print(f"Found {len(span_texts)} span elements")
+
+            if span_texts:
+                # Read existing content once
+                try:
+                    with open("log.txt", "r", encoding="utf-8") as f:
+                        old_content = f.read()
+                except FileNotFoundError:
+                    old_content = ""
+                
+                # Write each span with a delay
+                for i, span_text in enumerate(span_texts):
+                    
+                    # Smooth scroll to element with animation
+                    self.driver.execute_script(f"""
+                        var element = document.querySelectorAll('[data-area="mainline"] span')[{i}];
+                        if (element) {{
+                            element.scrollIntoView({{
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'center'
+                            }});
+                            
+                            // Optional: highlight the element briefly
+                            element.style.backgroundColor = 'red';
+                            element.style.transition = 'background-color 0.3s ease';
+                            
+                            setTimeout(function() {{
+                                element.style.backgroundColor = '';
+                            }}, 500);
+                        }}
+                    """)
+                    
+                    # Small delay to let scroll animation start
+                    time.sleep(0.3)
+                    
+                    # Append to file
+                    with open("log.txt", "a", encoding="utf-8") as f:
+                        f.write(span_text + "\n")
+                    
+                    time.sleep(0.2)  # 200ms delay between each write
             
 
             

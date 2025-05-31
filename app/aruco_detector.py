@@ -202,7 +202,7 @@ class ArucoDetector:
         # Create result visualization
         result_img = self.original_image.copy()
         if ids is not None:
-            cv2.aruco.drawDetectedMarkers(processed, corners, ids)
+            #cv2.aruco.drawDetectedMarkers(processed, corners, ids)
             print(f"Detected {len(ids)} markers: {ids.flatten()}")
         else:
             print("No markers detected")

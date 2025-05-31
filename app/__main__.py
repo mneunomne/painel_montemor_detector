@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import threading
 import queue
+import time
 # Add your imports here - adjust based on your actual module names
 from aruco_detector import ArucoDetector  # Adjust import path as needed
 from web_search import WebSearch  # Adjust import path as needed
@@ -25,6 +26,85 @@ current_segment_index = 0
 
 # Global queue for ArUco detection requests (like your detections_queue)
 detection_request_queue = queue.Queue()
+
+
+def find_longest_consecutive_sequence(corners, ids, max_markers=4):
+    """Find the longest consecutive sequence of marker IDs"""
+    if ids is None or len(ids) == 0:
+        return corners, ids
+    
+    flat_ids = ids.flatten()
+    unique_ids = sorted(np.unique(flat_ids))
+    
+    # Find all consecutive sequences
+    sequences = []
+    current_sequence = [unique_ids[0]]
+    
+    for i in range(1, len(unique_ids)):
+        if unique_ids[i] == unique_ids[i-1] + 1:  # Consecutive
+            current_sequence.append(unique_ids[i])
+        else:
+            sequences.append(current_sequence)
+            current_sequence = [unique_ids[i]]
+    
+    sequences.append(current_sequence)  # Add the last sequence
+    
+    # Find the longest sequence (up to max_markers)
+    best_sequence = []
+    for seq in sequences:
+        if len(seq) > len(best_sequence):
+            best_sequence = seq[:max_markers]  # Limit to max_markers
+    
+    print(f"Available sequences: {sequences}")
+    print(f"Selected sequence: {best_sequence}")
+    
+    # Filter markers to keep only the best consecutive sequence
+    filtered_corners = []
+    filtered_ids = []
+    
+    for i, marker_id in enumerate(flat_ids):
+        if marker_id in best_sequence:
+            filtered_corners.append(corners[i])
+            filtered_ids.append([marker_id])
+    
+    return filtered_corners, np.array(filtered_ids) if filtered_ids else None
+
+def is_square_shaped(corner_points, tolerance=0.3):
+    """Check if marker is roughly square-shaped"""
+    # Calculate all 4 side lengths
+    side_lengths = []
+    for j in range(4):
+        p1 = corner_points[j]
+        p2 = corner_points[(j + 1) % 4]
+        side_length = np.linalg.norm(p2 - p1)
+        side_lengths.append(side_length)
+    
+    # Check if all sides are roughly equal
+    avg_side = np.mean(side_lengths)
+    max_deviation = max(abs(side - avg_side) for side in side_lengths)
+    
+    # Allow some tolerance for perspective distortion
+    return max_deviation / avg_side <= tolerance
+
+def filter_square_markers(corners, ids, tolerance=0.3):
+    """Filter out markers that are not square-shaped"""
+    if ids is None or len(ids) == 0:
+        return corners, ids
+    
+    filtered_corners = []
+    filtered_ids = []
+    
+    for i, corner_set in enumerate(corners):
+        corner_points = corner_set[0] if len(corner_set.shape) == 3 else corner_set
+        
+        if is_square_shaped(corner_points, tolerance):
+            filtered_corners.append(corners[i])
+            filtered_ids.append(ids[i])
+        else:
+            print(f"Marker ID {ids[i][0]} filtered out - not square enough")
+    
+    return filtered_corners, np.array(filtered_ids) if filtered_ids else None
+
 
 def run_aruco_detection():
     """Run the ArUco detection process with OpenCV windows (main thread only)"""
@@ -49,12 +129,20 @@ def run_aruco_detection():
             print(f"corners: {corners}")
 
             # Filter corners and ids by size
-            filtered_corners, filtered_ids = detector.filter_markers_by_area(
+            corners, ids = detector.filter_markers_by_area(
                 corners, ids, min_area=500, max_area=2000
             )
+            
+            # Apply all filters in sequence
+            corners, ids = detector.filter_markers_by_area(corners, ids, min_area=500, max_area=2000)
+            if ids is not None:
+                print(f"After size filter: {ids.flatten()}")
 
-            ids = filtered_ids
-            corners = filtered_corners
+            corners, ids = filter_square_markers(corners, ids, tolerance=0.3)
+            if ids is not None:
+                print(f"After shape filter: {ids.flatten()}")
+
+            corners, ids = find_longest_consecutive_sequence(corners, ids, max_markers=4)
             
             # Show original with markers
             cv2.imshow("Original with Accumulated Markers", result_img)
@@ -62,6 +150,7 @@ def run_aruco_detection():
             # Find the smallest marker ID (used for data length)
             smallest_id = min(ids.flatten())
             print(f"Smallest marker ID: {smallest_id}")
+                
 
             if (len(ids) == 4):
                 # Get perspective transform
@@ -85,18 +174,42 @@ def run_aruco_detection():
                 # Display results
                 print(f"\nFinal decoded message: '{message}'")
 
-                # Perform web search with the decoded message
-                searcher = WebSearch()
-                searcher.search(message)
-                
                 # Show visualization windows
                 cv2.imshow("Warped Perspective", warped)
                 cv2.imshow("Character Recognition Results", result_with_matches)
-                
-                print("\nPress any key to close windows...")
-                cv2.waitKey(0)
+
+                # cv wait sometime and let the window show
+                cv2.waitKey(1000)
+                # Close the windows after showing
                 cv2.destroyAllWindows()
+
+                # year is last 4 characters
+                # search_message = message.replace('|', ' ')
+                # last 4 characters of message
+                message = message.replace('?', '')
+                year = message[-4:]
+                name = message[:-4].strip()
+
+                year = year.replace('T', '1')
+                year = year.replace('|', '1')
+                year = year.replace('O', '0')
+                year = year.replace('|', ' ')
+                year = year.replace('Ç', '5')
+                name = name.replace('1', 'T')
+                name = name.replace('7', 'M')
+
+                search_message = f"{name} ano {year}"
+
+                # Perform web search with the decoded message
+                searcher = WebSearch()
+                searcher.search(search_message)
+            
                 
+                #print("\nPress any key to close windows...")
+                #cv2.waitKey(0)
+                #cv2.destroyAllWindows()
+
+                # replace "|" with " ""                
                 return f"Successfully decoded message: '{message}'"
             else:
                 print("Could not establish perspective transform - need exactly 4 markers")
