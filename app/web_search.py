@@ -26,6 +26,7 @@ class WebSearch:
     def search(self, message: str) -> bool:
         """Open Chrome, go to Google, and search the message"""
         cleaned_message = self.clean_message(message)
+        time.sleep(3)
         
         if not cleaned_message:
             print("❌ Cannot search: message is empty")
@@ -34,8 +35,8 @@ class WebSearch:
         try:
             # Setup Chrome
             options = Options()
-            options.add_argument('--window-size=1200,800')
-            options.add_argument("--window-position=100,100")  # x,y screen position
+            options.add_argument('--window-size=600,800')
+            options.add_argument("--window-position=230,100")  # x,y screen position
             # hide search bar   
             # options.add_argument('--hide-scrollbars')
             options.add_argument('--app=https://www.duckduckgo')
@@ -81,7 +82,7 @@ class WebSearch:
                     //elements[index].style.border = 'solid 1px red';  // Optional: change color to blue
                 }}
                 index++;
-            }}, 50);
+            }}, 20);
             """
             self.driver.execute_script(script)
 
@@ -112,7 +113,7 @@ class WebSearch:
                             element.scrollIntoView({{
                                 behavior: 'smooth',
                                 block: 'center',
-                                inline: 'center'
+                                inline: 'nearest'
                             }});
                             
                             // Optional: highlight the element briefly
@@ -121,7 +122,7 @@ class WebSearch:
                             
                             setTimeout(function() {{
                                 element.style.backgroundColor = '';
-                            }}, 500);
+                            }}, 200);
                         }}
                     """)
                     
@@ -132,12 +133,14 @@ class WebSearch:
                     with open("log.txt", "a", encoding="utf-8") as f:
                         f.write(span_text + "\n")
                     
-                    time.sleep(0.2)  # 200ms delay between each write
+                    time.sleep(0.1)  # 200ms delay between each write
 
                     
             
 
-            
+            print("✅ Search completed successfully")
+            self.driver.close()
+            return True
         except Exception as e:
             print(f"❌ Search failed: {e}")
             return False

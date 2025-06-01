@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: black;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container img {
+            max-width: 100%;
+            max-height: 100%;
+            height: auto;
+            width: auto;
+            /* rotate 180 degrees */
+            transform: rotate(180deg);
+        }
+        
+        /* Red cross styling */
+        .red-cross-middle-screen {
+            position: absolute;
+            background-color: red;
+            top: 50%;
+            left: 50%;
+            z-index: 10;
+        }
+        
+        /* Vertical line of the cross */
+        .red-cross-middle-screen.a {
+            width: 4px;
+            height: 400px;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Horizontal line of the cross */
+        .red-cross-middle-screen.b {
+            width: 400px;
+            height: 4px;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Hide the extra divs */
+        .red-cross-middle-screen.c,
+        .red-cross-middle-screen.d {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="http://192.168.31.227:5000/video_feed" alt="Video Feed">
+        <div class="red-cross-middle-screen a"></div>
+        <div class="red-cross-middle-screen b"></div>
+        <div class="red-cross-middle-screen c"></div>
+        <div class="red-cross-middle-screen d"></div>
+    </div>
+</body>
+</html>

@@ -215,8 +215,8 @@ def run_aruco_detection():
             else:
                 print("Could not establish perspective transform - need exactly 4 markers")
                 print("\nPress any key to close windows...")
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+                #cv2.waitKey(0)
+                #cv2.destroyAllWindows()
                 return "Could not establish perspective transform - need exactly 4 markers"
         else:
             print("No markers detected after all attempts!")

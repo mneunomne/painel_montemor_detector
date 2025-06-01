@@ -10,7 +10,7 @@ import glob
 from character_recognition import recognize_character_from_image, join_characters_to_message
 # random
 from random import randint as rand
-#from cv2 import delay, imshow, waitKey, destroyAllWindows
+#from cv2 import    , imshow, waitKey, destroyAllWindows
 
 class ArucoDetector:
     def __init__(self, image_path='image.jpg'):
@@ -322,7 +322,7 @@ class ArucoDetector:
         # Prepare final results
         if len(accumulated_markers) == 0:
             print("No markers detected after all attempts!")
-            return None, None, None
+            return None, None, None 
         
         # Convert accumulated markers to standard format
         final_corners = []
