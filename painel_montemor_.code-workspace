@@ -1,0 +1,34 @@
+{
+	"folders": [
+		{
+			"path": "../Documents/Processing/painel_montemor_"
+		},
+		{
+			"path": "../painel_montemor_azulejos"
+		},
+		{
+			"path": "../painel_montemor_o_novo"
+		},
+		{
+			"path": "../aruco-export"
+		},
+		{
+			"path": "../painel-barcode"
+		},
+		{
+			"path": "../halftoneQrcode"
+		},
+		{
+			"path": "../halftone-qrcode"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../polargraph_fluidnc"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "halftone-qrcode"
+	}
+}
